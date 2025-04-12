@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>TeslaTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 10px;
+      text-align: center;
+    }
+    input {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-left: 5px;
+    }
+    .video-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .video {
+      width: 100%;
+      max-width: 300px;
+      margin: 10px;
+    }
+    iframe {
+      width: 100%;
+      height: 180px;
+    }
+  </style>
+</head>
+<body>
+  <h1>TeslaTube</h1>
+  <input type="text" id="searchInput" placeholder="YouTube'da ara...">
+  <button onclick="searchVideos()">Ara</button>
+
+  <div class="video-grid" id="results"></div>
+
+  <script>
+    const API_KEY = 'AIzaSyD1VzTDmjT0vJe_ZXUwKa9F97Ya6_UK8Fg'; // Demo Key
+
+    function searchVideos() {
+      const query = document.getElementById('searchInput').value;
+      const results = document.getElementById('results');
+      results.innerHTML = '';
+
+      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=6&key=${API_KEY}`)
+        .then(response => response.json())
+        .then(data => {
+          data.items.forEach(item => {
+            const videoId = item.id.videoId;
+            const videoDiv = document.createElement('div');
+            videoDiv.className = 'video';
+            videoDiv.innerHTML = `
+              <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
+              <p>${item.snippet.title}</p>
+            `;
+            results.appendChild(videoDiv);
+          });
+        })
+        .catch(err => {
+          results.innerHTML = 'Video arama sırasında hata oluştu.';
+          console.error(err);
+        });
+    }
+  </script>
+</body>
+</html>
