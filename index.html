@@ -1,30 +1,15 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html>
 <head>
   <meta charset="UTF-8">
-  <title>Tesla Video Test</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    video {
-      width: 100vw;
-      height: 100vh;
-      object-fit: contain;
-    }
-  </style>
+  <title>User Agent Test</title>
 </head>
 <body>
-  <video controls autoplay>
-    <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
-    Tarayıcınız video etiketini desteklemiyor.
-  </video>
+  <h1>Senin Tarayıcın:</h1>
+  <p id="agent"></p>
+
+  <script>
+    document.getElementById("agent").textContent = navigator.userAgent;
+  </script>
 </body>
 </html>
