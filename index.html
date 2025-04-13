@@ -3,77 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <title>TeslaTube</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-      background: #000;
-      color: #fff;
-      font-family: sans-serif;
       margin: 0;
-      padding: 10px;
-      text-align: center;
-    }
-    input {
-      width: 80%;
-      padding: 10px;
-      font-size: 16px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-left: 5px;
-    }
-    .video-grid {
+      background: #000;
+      color: white;
+      font-family: sans-serif;
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 20px;
+      flex-direction: column;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
     }
-    .video {
-      width: 100%;
-      max-width: 300px;
-      margin: 10px;
+
+    input {
+      width: 90%;
+      margin: 20px;
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 5px;
+      border: none;
     }
+
     iframe {
-      width: 100%;
-      height: 180px;
+      width: 100vw;
+      height: 80vh;
+      border: none;
     }
   </style>
 </head>
 <body>
-  <h1>TeslaTube</h1>
-  <input type="text" id="searchInput" placeholder="YouTube'da ara...">
-  <button onclick="searchVideos()">Ara</button>
 
-  <div class="video-grid" id="results"></div>
+  <input type="text" id="ytLink" placeholder="YouTube video linkini yapıştır ve Enter'a bas">
+  <iframe id="player" allow="autoplay; fullscreen"></iframe>
 
   <script>
-    const API_KEY = 'AIzaSyC1d_YZ1wEr5uoZ-4peTFKiSDFm-IiIhWg'; // Demo Key
+    const input = document.getElementById('ytLink');
+    const player = document.getElementById('player');
 
-    function searchVideos() {
-      const query = document.getElementById('searchInput').value;
-      const results = document.getElementById('results');
-      results.innerHTML = '';
+    input.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        const url = input.value.trim();
+        const videoId = getYouTubeVideoID(url);
+        if (videoId) {
+          const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0`;
+          player.src = embedUrl;
+        } else {
+          alert("Geçerli bir YouTube bağlantısı girin.");
+        }
+      }
+    });
 
-      fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(query)}&type=video&maxResults=6&key=${API_KEY}`)
-        .then(response => response.json())
-        .then(data => {
-          data.items.forEach(item => {
-            const videoId = item.id.videoId;
-            const videoDiv = document.createElement('div');
-            videoDiv.className = 'video';
-            videoDiv.innerHTML = `
-              <iframe src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>
-              <p>${item.snippet.title}</p>
-            `;
-            results.appendChild(videoDiv);
-          });
-        })
-        .catch(err => {
-          results.innerHTML = 'Video arama sırasında hata oluştu.';
-          console.error(err);
-        });
+    function getYouTubeVideoID(url) {
+      const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11}).*/;
+      const match = url.match(regExp);
+      return match && match[2].length === 11 ? match[2] : null;
     }
   </script>
+
 </body>
 </html>
