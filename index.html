@@ -2,65 +2,29 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <title>TeslaTube</title>
+  <title>Tesla Video Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       margin: 0;
       background: #000;
-      color: white;
-      font-family: sans-serif;
       display: flex;
-      flex-direction: column;
+      justify-content: center;
       align-items: center;
       height: 100vh;
-      overflow: hidden;
     }
 
-    input {
-      width: 90%;
-      margin: 20px;
-      padding: 10px;
-      font-size: 18px;
-      border-radius: 5px;
-      border: none;
-    }
-
-    iframe {
+    video {
       width: 100vw;
-      height: 80vh;
-      border: none;
+      height: 100vh;
+      object-fit: contain;
     }
   </style>
 </head>
 <body>
-
-  <input type="text" id="ytLink" placeholder="YouTube video linkini yapıştır ve Enter'a bas">
-  <iframe id="player" allow="autoplay; fullscreen"></iframe>
-
-  <script>
-    const input = document.getElementById('ytLink');
-    const player = document.getElementById('player');
-
-    input.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') {
-        const url = input.value.trim();
-        const videoId = getYouTubeVideoID(url);
-        if (videoId) {
-          const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&controls=1&modestbranding=1&rel=0`;
-          player.src = embedUrl;
-        } else {
-          alert("Geçerli bir YouTube bağlantısı girin.");
-        }
-      }
-    });
-
-    function getYouTubeVideoID(url) {
-      const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11}).*/;
-      const match = url.match(regExp);
-      return match && match[2].length === 11 ? match[2] : null;
-    }
-  </script>
-
+  <video controls autoplay>
+    <source src="https://cdn.pixabay.com/video/2023/01/27/148293-796321834_large.mp4" type="video/mp4">
+    Tarayıcınız video etiketini desteklemiyor.
+  </video>
 </body>
 </html>
