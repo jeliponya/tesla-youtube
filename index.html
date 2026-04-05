@@ -1,15 +1,1422 @@
 <!DOCTYPE html>
-<html>
+
+<html lang="tr">
 <head>
-  <meta charset="UTF-8">
-  <title>User Agent Test</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ertek Finansal Kontrol Paneli</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080b10;--s1:#0d1119;--s2:#131824;--s3:#1a2030;
+  --border:#1e2840;--border2:#263050;
+  --gold:#c9a84c;--gold2:#e8c97a;
+  --blue:#3d7fff;--green:#1db97a;--red:#e8404a;
+  --orange:#f07d3a;--purple:#9b6dff;
+  --text:#dde4f0;--muted:#4a5878;--muted2:#6b7fa0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+.app{display:flex;min-height:100vh;}
+
+/* ── DESKTOP SIDEBAR ── */
+nav{width:220px;background:var(–s1);border-right:1px solid var(–border);padding:24px 0;display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:200;}
+.nav-logo{padding:0 20px 24px;border-bottom:1px solid var(–border);margin-bottom:16px;}
+.nav-logo-main{font-family:‘Syne’,sans-serif;font-weight:800;font-size:15px;color:var(–gold2);letter-spacing:.02em;}
+.nav-logo-sub{font-size:10px;color:var(–muted2);margin-top:2px;letter-spacing:.08em;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:500;color:var(–muted2);border-left:2px solid transparent;transition:all .15s;margin-bottom:2px;}
+.nav-item:hover{color:var(–text);background:var(–s2);}
+.nav-item.active{color:var(–gold2);border-left-color:var(–gold);background:var(–s2);}
+.nav-icon{font-size:16px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(–red);color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 6px;}
+.nav-sync{margin-top:auto;padding:14px 20px;border-top:1px solid var(–border);display:flex;align-items:center;gap:8px;font-size:11px;color:var(–muted2);}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(–muted);}
+.sync-dot.ok{background:var(–green);}
+.sync-dot.syncing{background:var(–orange);animation:pulse 1s infinite;}
+.sync-dot.err{background:var(–red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ── MOBİL BOTTOM NAV ── */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(–s1);border-top:1px solid var(–border);z-index:300;padding-bottom:env(safe-area-inset-bottom);}
+.bottom-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 2px 7px;cursor:pointer;color:var(–muted2);border-top:2px solid transparent;transition:all .15s;position:relative;gap:2px;}
+.bottom-nav-item.active{color:var(–gold2);border-top-color:var(–gold);}
+.bni-icon{font-size:19px;line-height:1;}
+.bni-label{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.03em;}
+.bni-badge{position:absolute;top:5px;right:calc(50% - 18px);background:var(–red);color:#fff;font-size:9px;font-weight:700;border-radius:8px;padding:0 4px;min-width:14px;text-align:center;}
+
+/* ── MAIN ── */
+main{margin-left:220px;flex:1;padding:28px 28px 60px;}
+.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:12px;}
+.page-title{font-family:‘Syne’,sans-serif;font-size:22px;font-weight:800;}
+.page-sub{font-size:12px;color:var(–muted2);margin-top:3px;}
+.today-badge{background:var(–s2);border:1px solid var(–border);border-radius:8px;padding:8px 14px;font-family:‘DM Mono’,monospace;font-size:11px;color:var(–muted2);white-space:nowrap;}
+.section{display:none;} .section.active{display:block;}
+
+/* ── CARDS ── */
+.card{background:var(–s2);border:1px solid var(–border);border-radius:12px;padding:18px;}
+.card-title{font-size:11px;font-weight:600;color:var(–muted2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.card-title .dot{width:6px;height:6px;border-radius:50%;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+
+/* ── STAT CARDS ── */
+.stat-card{background:var(–s2);border:1px solid var(–border);border-radius:10px;padding:16px;}
+.stat-label{font-size:11px;color:var(–muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.stat-val{font-family:‘DM Mono’,monospace;font-size:20px;font-weight:500;}
+.stat-sub{font-size:11px;color:var(–muted2);margin-top:4px;}
+.prog-wrap{height:5px;background:var(–s3);border-radius:3px;overflow:hidden;margin-top:8px;}
+.prog-fill{height:100%;border-radius:3px;transition:width .4s;}
+.dash-kpi{background:var(–s2);border:1px solid var(–border);border-radius:12px;padding:16px 18px;}
+.dash-kpi-label{font-size:10px;color:var(–muted2);text-transform:uppercase;letter-spacing:.07em;}
+.dash-kpi-val{font-family:‘DM Mono’,monospace;font-size:22px;font-weight:500;margin-top:4px;line-height:1.1;}
+.dash-kpi-sub{font-size:11px;color:var(–muted2);margin-top:4px;}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(4px);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(–s2);border:1px solid var(–border2);border-radius:14px;padding:22px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;}
+.modal-title{font-family:‘Syne’,sans-serif;font-size:15px;font-weight:700;color:var(–text);margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.modal-close{background:none;border:none;color:var(–muted2);font-size:22px;cursor:pointer;line-height:1;}
+.modal-close:hover{color:var(–red);}
+.frow{margin-bottom:11px;}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+label{display:block;font-size:10px;color:var(–muted2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;font-weight:600;}
+input,select,textarea{width:100%;background:var(–bg);border:1px solid var(–border);border-radius:7px;color:var(–text);padding:9px 11px;font-family:‘DM Sans’,sans-serif;font-size:14px;outline:none;transition:border-color .15s;-webkit-appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(–gold);}
+select option{background:var(–s2);}
+.btn{border:none;border-radius:8px;font-family:‘DM Sans’,sans-serif;font-size:13px;font-weight:600;padding:10px 16px;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn-gold{background:var(–gold);color:#000;}
+.btn-outline{background:transparent;border:1px solid var(–border2);color:var(–muted2);}
+.btn-green{background:var(–green);color:#000;}
+.btn-red-s{background:color-mix(in srgb,var(–red) 15%,transparent);border:1px solid var(–red);color:var(–red);}
+.btn-sm{padding:6px 11px;font-size:11px;}
+.btn-row{display:flex;gap:8px;margin-top:14px;justify-content:flex-end;}
+.add-btn{background:var(–gold);border:none;border-radius:8px;color:#000;font-family:‘DM Sans’,sans-serif;font-size:12px;font-weight:700;padding:8px 16px;cursor:pointer;}
+
+/* ── TABLE ── */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{font-size:10px;font-weight:700;color:var(–muted2);text-transform:uppercase;letter-spacing:.07em;padding:7px 10px;text-align:left;border-bottom:1px solid var(–border);}
+.tbl td{padding:10px 10px;border-bottom:1px solid var(–border);font-size:12px;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:var(–s3);}
+.mono{font-family:‘DM Mono’,monospace;}
+.pos{color:var(–green)!important;} .neg{color:var(–red)!important;} .warn{color:var(–orange)!important;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase;letter-spacing:.04em;}
+.bg-green{background:color-mix(in srgb,var(–green) 15%,transparent);color:var(–green);}
+.bg-red{background:color-mix(in srgb,var(–red) 15%,transparent);color:var(–red);}
+.bg-orange{background:color-mix(in srgb,var(–orange) 15%,transparent);color:var(–orange);}
+.bg-gold{background:color-mix(in srgb,var(–gold) 15%,transparent);color:var(–gold2);}
+.bg-blue{background:color-mix(in srgb,var(–blue) 15%,transparent);color:var(–blue);}
+.bg-purple{background:color-mix(in srgb,var(–purple) 15%,transparent);color:var(–purple);}
+
+/* ── COUNTDOWN ── */
+.cd{display:inline-block;font-family:‘DM Mono’,monospace;font-size:11px;padding:2px 7px;border-radius:4px;}
+.cd.urg{background:color-mix(in srgb,var(–red) 15%,transparent);color:var(–red);}
+.cd.sn{background:color-mix(in srgb,var(–orange) 15%,transparent);color:var(–orange);}
+.cd.ok{background:color-mix(in srgb,var(–green) 15%,transparent);color:var(–green);}
+
+/* ── ALERT ── */
+.alert{background:color-mix(in srgb,var(–ac,var(–orange)) 10%,transparent);border:1px solid color-mix(in srgb,var(–ac,var(–orange)) 30%,transparent);border-radius:8px;padding:11px 14px;font-size:12px;display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
+
+/* ── NAKIT BOX ── */
+.nakit-box{background:var(–s2);border:1px solid var(–border);border-radius:12px;padding:18px;}
+.nakit-box-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.nakit-dot{width:8px;height:8px;border-radius:50%;}
+.nakit-bal{font-family:‘DM Mono’,monospace;font-size:26px;font-weight:500;margin-bottom:14px;}
+.nakit-row{display:flex;gap:6px;}
+.nakit-inp{flex:1;background:var(–bg);border:1px solid var(–border);border-radius:6px;color:var(–text);padding:8px 10px;font-size:13px;font-family:‘DM Sans’,sans-serif;outline:none;}
+.nakit-inp:focus{border-color:var(–gold);}
+.nakit-btn{border:none;border-radius:6px;font-weight:700;font-size:12px;padding:8px 12px;cursor:pointer;}
+.nakit-btn.in{background:var(–green);color:#000;}
+.nakit-btn.out{background:var(–red);color:#fff;}
+
+/* ── TBL BTN ── */
+.tb{background:var(–s3);border:1px solid var(–border);border-radius:5px;color:var(–muted2);font-size:11px;font-weight:600;padding:4px 8px;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .15s;}
+.tb:hover{border-color:var(–gold);color:var(–gold);}
+.tb.del:hover{border-color:var(–red);color:var(–red);}
+.tb.ok{border-color:color-mix(in srgb,var(–green) 40%,transparent);color:var(–green);}
+.tb.ok:hover{background:color-mix(in srgb,var(–green) 10%,transparent);}
+
+/* ── CC CARD ── */
+.cc-card{background:linear-gradient(135deg,var(–s3),var(–s2));border:1px solid var(–border2);border-radius:12px;padding:16px;position:relative;overflow:hidden;}
+.cc-card::before{content:’’;position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:color-mix(in srgb,var(–cc,var(–gold)) 15%,transparent);}
+.cc-bank{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.cc-owner{font-size:11px;color:var(–muted2);margin-top:2px;}
+.cc-used{font-family:‘DM Mono’,monospace;font-size:20px;font-weight:500;color:var(–red);}
+.cc-avail{font-family:‘DM Mono’,monospace;font-size:13px;color:var(–green);}
+.cc-date-item{font-size:10px;color:var(–muted2);}
+.cc-date-val{font-family:‘DM Mono’,monospace;font-size:12px;color:var(–text);margin-top:1px;}
+
+/* ── ÇEK CARD ── */
+.cek-card{background:var(–s2);border:1px solid var(–border);border-radius:10px;padding:13px 14px;display:flex;align-items:center;gap:10px;margin-bottom:7px;transition:border-color .15s;}
+.cek-card:hover{border-color:var(–border2);}
+.cek-card.done{opacity:.45;}
+.cek-stripe{width:4px;height:48px;border-radius:2px;flex-shrink:0;}
+.cek-main{flex:1;min-width:0;}
+.cek-kisi{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cek-meta{font-size:11px;color:var(–muted2);margin-top:2px;}
+.cek-right{text-align:right;flex-shrink:0;}
+.cek-amt{font-family:‘DM Mono’,monospace;font-size:15px;font-weight:500;}
+.cek-vade{font-size:10px;color:var(–muted2);margin-top:2px;}
+
+/* ── HAREKET GEÇMİŞİ ── */
+.hx-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(–border);}
+.hx-item:last-child{border-bottom:none;}
+.hx-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.hx-main{flex:1;min-width:0;}
+.hx-tip{font-size:12px;font-weight:600;}
+.hx-meta{font-size:11px;color:var(–muted2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.hx-right{text-align:right;flex-shrink:0;}
+.hx-amt{font-family:‘DM Mono’,monospace;font-size:13px;font-weight:600;}
+.hx-date{font-size:10px;color:var(–muted2);margin-top:2px;}
+
+/* ── TIP BUTTONS ── */
+.tip-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;}
+.tip-btn{background:var(–bg);border:1px solid var(–border);border-radius:7px;padding:9px 6px;cursor:pointer;text-align:center;font-size:11px;font-weight:600;color:var(–muted2);transition:all .15s;font-family:‘DM Sans’,sans-serif;}
+.tip-btn.sel{background:color-mix(in srgb,var(–tc) 12%,var(–bg));border-color:var(–tc);color:var(–tc);}
+
+/* ── FILTER TABS ── */
+.ftabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+.ftab{background:var(–s2);border:1px solid var(–border);border-radius:6px;color:var(–muted2);font-size:11px;font-weight:600;padding:5px 12px;cursor:pointer;font-family:‘DM Sans’,sans-serif;transition:all .15s;}
+.ftab.active{border-color:var(–gold);color:var(–gold2);}
+
+/* ── SEC HEADER ── */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:8px;flex-wrap:wrap;}
+.sec-title{font-family:‘Syne’,sans-serif;font-size:16px;font-weight:700;}
+
+/* ── CLOUD SETUP ── */
+.cloud-setup{background:var(–s2);border:2px dashed var(–border2);border-radius:12px;padding:24px;text-align:center;margin-bottom:20px;}
+.cloud-setup h3{font-family:‘Syne’,sans-serif;font-size:15px;font-weight:700;margin-bottom:8px;color:var(–gold2);}
+.cloud-setup p{font-size:12px;color:var(–muted2);margin-bottom:14px;line-height:1.6;}
+
+.sep{height:1px;background:var(–border);margin:18px 0;}
+.mb16{margin-bottom:16px;} .mb20{margin-bottom:20px;}
+.empty{text-align:center;padding:28px;color:var(–muted2);font-size:13px;}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(60px);background:var(–green);color:#000;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;transition:transform .25s;z-index:999;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(–red);color:#fff;}
+.toast.warn{background:var(–orange);color:#000;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+nav{display:none;}
+.bottom-nav{display:flex;}
+main{margin-left:0;padding:14px 12px 95px;}
+.grid4{grid-template-columns:1fr 1fr;}
+.grid3{grid-template-columns:1fr 1fr;}
+.grid2{grid-template-columns:1fr;}
+.frow2{grid-template-columns:1fr;}
+.page-header{flex-direction:column;}
+.today-badge{align-self:flex-start;}
+.tip-grid{grid-template-columns:repeat(2,1fr);}
+.toast{bottom:80px;}
+}
+@media(max-width:400px){
+.grid4,.grid3{grid-template-columns:1fr;}
+}
+</style>
+
 </head>
 <body>
-  <h1>Senin Tarayıcın:</h1>
-  <p id="agent"></p>
+<div class="app">
 
-  <script>
-    document.getElementById("agent").textContent = navigator.userAgent;
-  </script>
+<!-- ═══ DESKTOP SIDEBAR ═══ -->
+
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-main">ERTEK</div>
+    <div class="nav-logo-sub">Finansal Panel v3</div>
+  </div>
+  <div class="nav-item active" onclick="go('dashboard')" id="nav-dashboard"><span class="nav-icon">⬛</span><span>Dashboard</span></div>
+  <div class="nav-item" onclick="go('hareket')" id="nav-hareket"><span class="nav-icon">↔️</span><span>Para Akışı</span></div>
+  <div class="nav-item" onclick="go('nakit')" id="nav-nakit"><span class="nav-icon">💵</span><span>Nakit Kasa</span></div>
+  <div class="nav-item" onclick="go('banka')" id="nav-banka"><span class="nav-icon">🏦</span><span>Banka</span></div>
+  <div class="nav-item" onclick="go('kredi')" id="nav-kredi"><span class="nav-icon">📅</span><span>Kredi</span><span class="nav-badge" id="nb-kredi" style="display:none">!</span></div>
+  <div class="nav-item" onclick="go('kk')" id="nav-kk"><span class="nav-icon">💳</span><span>Kart</span><span class="nav-badge" id="nb-kk" style="display:none">!</span></div>
+  <div class="nav-item" onclick="go('cek')" id="nav-cek"><span class="nav-icon">📄</span><span>Çek</span><span class="nav-badge" id="nb-cek" style="display:none">!</span></div>
+  <div class="nav-item" onclick="go('ayar')" id="nav-ayar"><span class="nav-icon">⚙️</span><span>Ayarlar</span></div>
+  <div class="nav-sync"><div class="sync-dot" id="syncDot"></div><span id="syncLabel">Yerel kayıt</span></div>
+</nav>
+
+<!-- ═══ MOBİL BOTTOM NAV ═══ -->
+
+<div class="bottom-nav">
+  <div class="bottom-nav-item active" onclick="go('dashboard')" id="bnav-dashboard"><span class="bni-icon">⬛</span><span class="bni-label">Ana</span></div>
+  <div class="bottom-nav-item" onclick="go('hareket')" id="bnav-hareket"><span class="bni-icon">↔️</span><span class="bni-label">Akış</span></div>
+  <div class="bottom-nav-item" onclick="go('nakit')" id="bnav-nakit"><span class="bni-icon">💵</span><span class="bni-label">Nakit</span></div>
+  <div class="bottom-nav-item" onclick="go('banka')" id="bnav-banka"><span class="bni-icon">🏦</span><span class="bni-label">Banka</span></div>
+  <div class="bottom-nav-item" onclick="go('kredi')" id="bnav-kredi"><span class="bni-icon">📅</span><span class="bni-label">Kredi</span><span class="bni-badge" id="bnb-kredi" style="display:none">!</span></div>
+  <div class="bottom-nav-item" onclick="go('kk')" id="bnav-kk"><span class="bni-icon">💳</span><span class="bni-label">KK</span><span class="bni-badge" id="bnb-kk" style="display:none">!</span></div>
+  <div class="bottom-nav-item" onclick="go('cek')" id="bnav-cek"><span class="bni-icon">📄</span><span class="bni-label">Çek</span><span class="bni-badge" id="bnb-cek" style="display:none">!</span></div>
+</div>
+
+<main>
+<div class="page-header">
+  <div><div class="page-title" id="pageTitle">Dashboard</div><div class="page-sub" id="pageSub">Genel finansal özet</div></div>
+  <div class="today-badge" id="todayBadge"></div>
+</div>
+
+<!-- ═══ DASHBOARD ═══ -->
+
+<div class="section active" id="section-dashboard">
+  <div id="alertsBox" class="mb16"></div>
+  <div class="grid4 mb20" id="dashKpis"></div>
+  <div class="grid2 mb20">
+    <div class="card"><div class="card-title"><div class="dot" style="background:var(--gold)"></div>Yaklaşan Kredi (30 gün)</div><div id="d-kredi"></div></div>
+    <div class="card"><div class="card-title"><div class="dot" style="background:var(--purple)"></div>KK Son Ödeme</div><div id="d-kk"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title"><div class="dot" style="background:var(--green)"></div>Alınan Çek (30 gün)</div><div id="d-cal"></div></div>
+    <div class="card"><div class="card-title"><div class="dot" style="background:var(--red)"></div>Verilen Çek (30 gün)</div><div id="d-cver"></div></div>
+  </div>
+</div>
+
+<!-- ═══ PARA AKIŞI ═══ -->
+
+<div class="section" id="section-hareket">
+  <div class="sec-hdr">
+    <div class="sec-title">Para Akışı Motoru</div>
+    <button class="add-btn" onclick="openModal('hareket')">+ Yeni Hareket</button>
+  </div>
+  <div id="hareketList"></div>
+</div>
+
+<!-- ═══ NAKİT ═══ -->
+
+<div class="section" id="section-nakit">
+  <div class="grid2 mb20" id="nakitBoxes"></div>
+  <div class="card"><div class="card-title"><div class="dot" style="background:var(--gold)"></div>Nakit Hareketleri</div><div id="nakitTxList"></div></div>
+</div>
+
+<!-- ═══ BANKA ═══ -->
+
+<div class="section" id="section-banka">
+  <div class="sec-hdr mb20"><div class="sec-title">Banka Hesapları</div><button class="add-btn" onclick="openModal('banka')">+ Hesap Ekle</button></div>
+  <div id="bankaList"></div>
+</div>
+
+<!-- ═══ KREDİ ═══ -->
+
+<div class="section" id="section-kredi">
+  <div class="sec-hdr mb20">
+    <div class="sec-title">Kredi Vade Takibi</div>
+    <div style="display:flex;gap:8px">
+      <button class="add-btn" style="background:var(--green);color:#000" onclick="importKrediData()">⚡ Excel'den Yükle (132 Taksit)</button>
+      <button class="add-btn" onclick="openModal('kredi')">+ Manuel Ekle</button>
+    </div>
+  </div>
+  <div id="krediList"></div>
+</div>
+
+<!-- ═══ KREDİ KARTI ═══ -->
+
+<div class="section" id="section-kk">
+  <div class="sec-hdr mb20">
+    <div class="sec-title">Kredi Kartları</div>
+    <div style="display:flex;gap:8px">
+      <button class="add-btn" style="background:var(--green);color:#000" onclick="importKKData()">⚡ Excel'den Yükle (16 Kart)</button>
+      <button class="add-btn" onclick="openModal('kk')">+ Manuel Ekle</button>
+    </div>
+  </div>
+  <div class="grid2" id="kkList"></div>
+</div>
+
+<!-- ═══ ÇEK ═══ -->
+
+<div class="section" id="section-cek">
+  <div class="sec-hdr mb20">
+    <div class="sec-title">Çek Takibi</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="add-btn" style="background:var(--green);color:#000" onclick="importCekData()">⚡ Excel'den Yükle (18 Çek)</button>
+      <button class="add-btn" onclick="openModal('cek')">+ Çek Ekle</button>
+    </div>
+  </div>
+  <div class="grid4 mb20" id="cekStats"></div>
+  <div class="ftabs">
+    <div class="ftab active" onclick="setCekF('hepsi',this)">Hepsi</div>
+    <div class="ftab" onclick="setCekF('hesap',this)">💰 Hesap</div>
+    <div class="ftab" onclick="setCekF('emanet',this)">🤝 Emanet</div>
+    <div class="ftab" onclick="setCekF('bekleyen',this)">⏳ Bekleyen</div>
+    <div class="ftab" onclick="setCekF('biten',this)">✅ Tamamlanan</div>
+  </div>
+  <div id="cekList"></div>
+</div>
+
+<!-- ═══ AYARLAR ═══ -->
+
+<div class="section" id="section-ayar">
+  <div class="sec-hdr mb20"><div class="sec-title">Ayarlar & Cloud Sync</div></div>
+  <div class="cloud-setup" id="cloudSetup">
+    <h3>☁️ Supabase Cloud Sync</h3>
+    <p>Verileriniz şu an yalnızca bu tarayıcıda tutuluyor.<br>Supabase bağlantısı kurulduğunda tüm cihazlarda anlık senkronize olur.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;max-width:360px;margin:0 auto">
+      <input id="sbUrl" placeholder="Supabase Project URL" style="text-align:center">
+      <input id="sbKey" placeholder="Supabase Anon Key" style="text-align:center">
+      <button class="btn btn-gold" onclick="saveSupabase()">Bağlan & Test Et</button>
+    </div>
+    <p style="margin-top:12px;font-size:11px">supabase.com → Projeniz → Settings → API</p>
+  </div>
+  <div class="card mb16">
+    <div class="card-title"><div class="dot" style="background:var(--red)"></div>Tehlikeli Bölge</div>
+    <button class="btn btn-red-s btn-sm" onclick="resetAll()">🗑️ Tüm Verileri Sıfırla</button>
+  </div>
+  <div class="card">
+    <div class="card-title"><div class="dot" style="background:var(--blue)"></div>Veri Yedekle / Yükle</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="exportJSON()">⬇️ JSON İndir</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('importIn').click()">⬆️ JSON Yükle</button>
+      <input type="file" id="importIn" accept=".json" style="display:none" onchange="importJSON(this)">
+    </div>
+  </div>
+</div>
+
+</main>
+</div><!-- .app -->
+
+<!-- ══════════ MODALS ══════════ -->
+
+<!-- HAREKET -->
+
+<div class="modal-overlay" id="modal-hareket">
+<div class="modal">
+  <div class="modal-title">Yeni Hareket <button class="modal-close" onclick="closeModal('hareket')">×</button></div>
+  <div class="frow">
+    <label>Hareket Tipi</label>
+    <div class="tip-grid" id="tipGrid"></div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label>Tutar (TL)</label><input type="number" id="h-tutar" placeholder="0.00" step="0.01"></div>
+    <div class="frow"><label>Tarih</label><input type="date" id="h-tarih"></div>
+  </div>
+  <div class="frow" id="h-kaynak-row" style="display:none"><label id="h-kaynak-lbl">Kaynak</label><select id="h-kaynak"></select></div>
+  <div class="frow" id="h-hedef-row" style="display:none"><label id="h-hedef-lbl">Hedef</label><select id="h-hedef"></select></div>
+  <div class="frow"><label>Açıklama</label><input id="h-acik" placeholder="İsteğe bağlı"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('hareket')">İptal</button><button class="btn btn-gold" onclick="saveHareket()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- BANKA -->
+
+<div class="modal-overlay" id="modal-banka">
+<div class="modal">
+  <div class="modal-title">Banka Hesabı <button class="modal-close" onclick="closeModal('banka')">×</button></div>
+  <div class="frow2">
+    <div class="frow"><label>Banka</label><select id="b-bank">
+      <option>Kuveyt Türk</option><option>Türkiye Finans</option><option>Ziraat Katılım</option>
+      <option>İş Bankası</option><option>Halk Bankası</option><option>Ziraat Bankası</option>
+      <option>Akbank</option><option>Vakıf Bankası</option>
+    </select></div>
+    <div class="frow"><label>Şirket</label><select id="b-sirket">
+      <option>Ertek Tavukçuluk</option><option>Öz Ertek Gıda</option><option>Şahıs</option>
+    </select></div>
+  </div>
+  <div class="frow"><label>Hesap Adı / IBAN Son 4</label><input id="b-adi" placeholder="Vadesiz TL *1234"></div>
+  <div class="frow"><label>Başlangıç Bakiyesi (TL)</label><input type="number" id="b-bakiye" placeholder="0.00"></div>
+  <div class="frow"><label>Not</label><input id="b-not"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('banka')">İptal</button><button class="btn btn-gold" onclick="saveBanka()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- BANKA İŞLEM -->
+
+<div class="modal-overlay" id="modal-bislem">
+<div class="modal">
+  <div class="modal-title" id="bislem-title">Bakiye Güncelle <button class="modal-close" onclick="closeModal('bislem')">×</button></div>
+  <input type="hidden" id="bislem-id">
+  <div class="frow">
+    <label>İşlem</label>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="btn btn-green btn-sm" id="bi-yatir" onclick="setBIT('yatir')" style="flex:1">+ Yatır</button>
+      <button class="btn btn-outline btn-sm" id="bi-cek" onclick="setBIT('cek')" style="flex:1">− Çek</button>
+      <button class="btn btn-outline btn-sm" id="bi-set" onclick="setBIT('set')" style="flex:1">= Bakiye</button>
+    </div>
+  </div>
+  <div class="frow"><label id="bi-lbl">Tutar (TL)</label><input type="number" id="bi-tutar" placeholder="0.00"></div>
+  <div class="frow"><label>Açıklama</label><input id="bi-acik"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('bislem')">İptal</button><button class="btn btn-gold" onclick="saveBIT()">Uygula</button></div>
+</div>
+</div>
+
+<!-- KREDİ -->
+
+<div class="modal-overlay" id="modal-kredi">
+<div class="modal">
+  <div class="modal-title">Kredi Ekle <button class="modal-close" onclick="closeModal('kredi')">×</button></div>
+  <div class="frow2">
+    <div class="frow"><label>Banka</label><select id="k-bank">
+      <option>Kuveyt Türk</option><option>Türkiye Finans</option><option>Ziraat Katılım</option>
+      <option>İş Bankası</option><option>Halk Bankası</option><option>Ziraat Bankası</option>
+      <option>Akbank</option><option>Vakıf Bankası</option>
+    </select></div>
+    <div class="frow"><label>Şirket</label><select id="k-sirket">
+      <option>Ertek Tavukçuluk</option><option>Öz Ertek Gıda</option><option>Şahıs</option>
+    </select></div>
+  </div>
+  <div class="frow"><label>Kredi Adı</label><input id="k-adi" placeholder="Ticari Kredi, Spot..."></div>
+  <div class="frow2">
+    <div class="frow"><label>Kalan Borç (TL)</label><input type="number" id="k-kalan" placeholder="0.00"></div>
+    <div class="frow"><label>Aylık Taksit (TL)</label><input type="number" id="k-taksit" placeholder="0.00"></div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label>Sonraki Ödeme</label><input type="date" id="k-tarih"></div>
+    <div class="frow"><label>Faiz (%)</label><input type="number" id="k-faiz" step="0.01" placeholder="4.50"></div>
+  </div>
+  <div class="frow"><label>Not</label><input id="k-not"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('kredi')">İptal</button><button class="btn btn-gold" onclick="saveKredi()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- KK -->
+
+<div class="modal-overlay" id="modal-kk">
+<div class="modal">
+  <div class="modal-title">Kart Ekle <button class="modal-close" onclick="closeModal('kk')">×</button></div>
+  <div class="frow2">
+    <div class="frow"><label>Banka</label><select id="kk-bank">
+      <option>Kuveyt Türk</option><option>Türkiye Finans</option><option>Ziraat Katılım</option>
+      <option>İş Bankası</option><option>Halk Bankası</option><option>Ziraat Bankası</option>
+      <option>Akbank</option><option>Vakıf Bankası</option>
+    </select></div>
+    <div class="frow"><label>Sahibi</label><select id="kk-sahip">
+      <option>Ertek Tavukçuluk</option><option>Öz Ertek Gıda</option><option>Şahıs (Enbiya)</option>
+    </select></div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label>Limit (TL)</label><input type="number" id="kk-limit" placeholder="0.00"></div>
+    <div class="frow"><label>Kullanılan (TL)</label><input type="number" id="kk-kull" placeholder="0.00"></div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label>Kesim Günü</label><input type="number" id="kk-kesim" min="1" max="31" placeholder="15"></div>
+    <div class="frow"><label>Son Ödeme Günü</label><input type="number" id="kk-son" min="1" max="31" placeholder="5"></div>
+  </div>
+  <div class="frow"><label>Not</label><input id="kk-not"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('kk')">İptal</button><button class="btn btn-gold" onclick="saveKK()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- KK GÜNCELLE -->
+
+<div class="modal-overlay" id="modal-kku">
+<div class="modal">
+  <div class="modal-title">Kart Güncelle <button class="modal-close" onclick="closeModal('kku')">×</button></div>
+  <input type="hidden" id="kku-id">
+  <div class="frow"><label>Kullanılan (TL)</label><input type="number" id="kku-kull" placeholder="0.00"></div>
+  <div class="frow"><label>Not</label><input id="kku-not"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('kku')">İptal</button><button class="btn btn-gold" onclick="saveKKU()">Güncelle</button></div>
+</div>
+</div>
+
+<!-- ÇEK -->
+
+<div class="modal-overlay" id="modal-cek">
+<div class="modal">
+  <div class="modal-title">Çek Ekle <button class="modal-close" onclick="closeModal('cek')">×</button></div>
+  <div class="frow">
+    <label>Çek Yönü</label>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="btn btn-green btn-sm" id="cek-al-btn" onclick="setCekTur('alinan')" style="flex:1">📥 Alınan</button>
+      <button class="btn btn-outline btn-sm" id="cek-ver-btn" onclick="setCekTur('verilen')" style="flex:1">📤 Verilen</button>
+    </div>
+  </div>
+  <div class="frow">
+    <label>Çek Tipi</label>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button class="btn btn-gold btn-sm" id="cek-hesap-btn" onclick="setCekTip('HESAP')" style="flex:1">💰 Hesap (Gerçek Alacak)</button>
+      <button class="btn btn-outline btn-sm" id="cek-emanet-btn" onclick="setCekTip('EMANET')" style="flex:1">🤝 Emanet (Hatır Çeki)</button>
+    </div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label id="cek-kisi-lbl">Borçlu (Müşteri)</label><input id="cek-kisi" placeholder="Ad / Firma"></div>
+    <div class="frow"><label>Şirket</label><select id="cek-sirket">
+      <option>Ertek Tavukçuluk</option><option>Öz Ertek Gıda</option><option>Şahıs</option>
+    </select></div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label>Tutar (TL)</label><input type="number" id="cek-tutar" placeholder="0.00"></div>
+    <div class="frow"><label>Vade Tarihi</label><input type="date" id="cek-vade"></div>
+  </div>
+  <div class="frow2">
+    <div class="frow"><label>Çek No</label><input id="cek-no" placeholder="İsteğe bağlı"></div>
+    <div class="frow"><label>Olduğu Yer (Banka/Kasa)</label><input id="cek-yer" placeholder="Kuveyt Türk, Kasada..."></div>
+  </div>
+  <div class="frow"><label>Not</label><input id="cek-not"></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('cek')">İptal</button><button class="btn btn-gold" onclick="saveCek()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- NAKİT HAREKET -->
+
+<div class="modal-overlay" id="modal-nh">
+<div class="modal">
+  <div class="modal-title" id="nh-title">Nakit Hareketi <button class="modal-close" onclick="closeModal('nh')">×</button></div>
+  <input type="hidden" id="nh-lok"><input type="hidden" id="nh-yon">
+  <div class="frow"><label>Tutar (TL)</label><input type="number" id="nh-tutar" placeholder="0.00"></div>
+  <div class="frow"><label>Tarih</label><input type="date" id="nh-tarih"></div>
+  <div class="frow"><label>Açıklama</label><input id="nh-acik" placeholder="Müşteri tahsilatı, tedarikçi ödemesi..."></div>
+  <div class="btn-row"><button class="btn btn-outline" onclick="closeModal('nh')">İptal</button><button class="btn btn-gold" onclick="saveNH()">Kaydet</button></div>
+</div>
+</div>
+
+<!-- BANKA SEÇİM MODAL (Kredi & Çek işlemleri için) -->
+
+<div class="modal-overlay" id="modal-bsec">
+<div class="modal">
+  <div class="modal-title" id="bsec-title">Banka Seç <button class="modal-close" onclick="closeModal('bsec')">×</button></div>
+  <input type="hidden" id="bsec-refid">
+  <input type="hidden" id="bsec-tip">
+  <div class="frow">
+    <label>Hangi Banka Hesabından?</label>
+    <select id="bsec-bank"></select>
+  </div>
+  <div class="frow" id="bsec-kalan-row">
+    <label id="bsec-kalan-lbl">Yeni Kalan Borç (TL)</label>
+    <input type="number" id="bsec-kalan" placeholder="0.00">
+  </div>
+  <div class="frow"><label>Açıklama (isteğe bağlı)</label><input id="bsec-acik"></div>
+  <div class="btn-row">
+    <button class="btn btn-outline" onclick="closeModal('bsec')">İptal</button>
+    <button class="btn btn-gold" onclick="bsecOnayla()">Onayla</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════
+// ⚙️  SUPABASE CONFIG (boş = local only)
+// ════════════════════════════════════════
+let SB_URL = 'https://zrnsuitieyjruxpexjgt.supabase.co';
+let SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpybnN1aXRpZXlqcnV4cGV4amd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU0MDIyNDQsImV4cCI6MjA5MDk3ODI0NH0.7Kze1Xfpff3OAfGtqzn9cNQ3h1piBaCONOkUAcpA15c';
+
+async function sbFetch(method, table, body=null, filter=''){
+  if(!SB_URL||!SB_KEY) return null;
+  const url = `${SB_URL}/rest/v1/${table}${filter}`;
+  const opts = {
+    method,
+    headers:{
+      'apikey':SB_KEY,
+      'Authorization':'Bearer '+SB_KEY,
+      'Content-Type':'application/json',
+      'Prefer': method==='POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation'
+    },
+  };
+  if(body) opts.body = JSON.stringify(body);
+  try{const r=await fetch(url,opts);if(r.ok){const j=await r.json();return j;}return null;}
+  catch(e){console.error('sbFetch error',e);return null;}
+}
+
+async function cloudPush(){
+  if(!SB_URL||!SB_KEY){setSyncStatus('local');return;}
+  setSyncStatus('syncing');
+  const payload = {id:'main', data: JSON.stringify(D), updated_at: new Date().toISOString()};
+  const r = await sbFetch('POST','ertek_data',payload,'?on_conflict=id');
+  setSyncStatus(r!==null?'ok':'err');
+  if(r===null) console.warn('Cloud sync hatası');
+}
+
+async function cloudPull(){
+  if(!SB_URL||!SB_KEY) return;
+  const r = await sbFetch('GET','ertek_data',null,'?id=eq.main');
+  if(r&&r[0]&&r[0].data){
+    try{D=JSON.parse(r[0].data);saveLocal();renderAll();}catch{}
+  }
+}
+
+function setSyncStatus(s){
+  const dot=document.getElementById('syncDot');
+  const lbl=document.getElementById('syncLabel');
+  dot.className='sync-dot '+(s==='ok'?'ok':s==='syncing'?'syncing':s==='err'?'err':'');
+  lbl.textContent=s==='ok'?'Cloud ✓':s==='syncing'?'Sync...':s==='err'?'Bağlantı hatası':'Yerel kayıt';
+}
+
+function saveSupabase(){
+  const url=document.getElementById('sbUrl').value.trim();
+  const key=document.getElementById('sbKey').value.trim();
+  if(!url||!key){showToast('URL ve Key girin',true);return;}
+  SB_URL=url;SB_KEY=key;
+  localStorage.setItem('sb_url',url);localStorage.setItem('sb_key',key);
+  cloudPush().then(()=>showToast('Bağlantı başarılı ✓'));
+}
+
+// ════════════════════════════════════════
+// 💾  VERİ KATMANI
+// ════════════════════════════════════════
+const SK='ertek_v3';
+function defData(){return{banka:[],kredi:[],kk:[],nakit:{kasa_ertek:0,kasa_ozertek:0},nakitTx:[],cekler:[],hareketler:[]};}
+function loadLocal(){try{const d=JSON.parse(localStorage.getItem(SK));return d?{...defData(),...d}:defData();}catch{return defData();}}
+function saveLocal(){localStorage.setItem(SK,JSON.stringify(D));}
+async function saveAll(){saveLocal();await cloudPush();}
+let D=loadLocal();
+
+// ════════════════════════════════════════
+// 🔧  YARDIMCILAR
+// ════════════════════════════════════════
+const fmt=n=>new Intl.NumberFormat('tr-TR',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const todayStr=()=>new Date().toISOString().slice(0,10);
+function daysUntil(ds){const n=new Date();n.setHours(0,0,0,0);const d=new Date(ds);d.setHours(0,0,0,0);return Math.round((d-n)/86400000);}
+function nextDom(day){const n=new Date();let d=new Date(n.getFullYear(),n.getMonth(),day);if(d<=n)d=new Date(n.getFullYear(),n.getMonth()+1,day);return d.toISOString().slice(0,10);}
+function fdate(ds){try{return new Date(ds).toLocaleDateString('tr-TR',{day:'2-digit',month:'2-digit',year:'numeric'});}catch{return ds;}}
+function cdBadge(days){
+  if(days<0)return`<span class="cd urg">GEÇTİ ${Math.abs(days)}g</span>`;
+  if(days===0)return`<span class="cd urg">BUGÜN</span>`;
+  if(days<=5)return`<span class="cd urg">${days} gün</span>`;
+  if(days<=15)return`<span class="cd sn">${days} gün</span>`;
+  return`<span class="cd ok">${days} gün</span>`;
+}
+
+const PAGES={
+  dashboard:{title:'Dashboard',sub:'Genel finansal özet'},
+  hareket:{title:'Para Akışı',sub:'Tüm finansal hareketler'},
+  nakit:{title:'Nakit Kasa',sub:'Ertek & Öz Ertek kasaları'},
+  banka:{title:'Banka Hesapları',sub:'Bakiye ve hareketler'},
+  kredi:{title:'Kredi Takibi',sub:'Vade ve ödeme planı'},
+  kk:{title:'Kredi Kartları',sub:'Limit, kullanım, son ödeme'},
+  cek:{title:'Çek Takibi',sub:'Alınan ve verilen çekler'},
+  ayar:{title:'Ayarlar',sub:'Cloud sync ve veri yönetimi'},
+};
+
+const NAKIT_LOCS=[
+  {id:'kasa_ertek',name:'Ertek Tavukçuluk',color:'#c9a84c'},
+  {id:'kasa_ozertek',name:'Öz Ertek Gıda',color:'#3d7fff'},
+];
+
+// hareket tipi tanımları
+const HTIPLER=[
+  {id:'nakit_giris',    label:'Nakit Giriş',     icon:'💰', color:'#1db97a', kaynak:null,     hedef:'kasa'},
+  {id:'nakit_cikis',   label:'Nakit Çıkış',     icon:'💸', color:'#e8404a', kaynak:'kasa',   hedef:null},
+  {id:'banka_giris',   label:'Bankaya Yatır',   icon:'🏦', color:'#3d7fff', kaynak:'kasa',   hedef:'banka'},
+  {id:'banka_cikis',   label:'Bankadan Çek',    icon:'🔃', color:'#f07d3a', kaynak:'banka',  hedef:'kasa'},
+  {id:'banka_odeme',   label:'Banka Ödemesi',   icon:'📤', color:'#e8404a', kaynak:'banka',  hedef:null},
+  {id:'cek_tahsil',    label:'Çek Tahsil',      icon:'📄', color:'#1db97a', kaynak:null,     hedef:'banka'},
+  {id:'kredi_odeme',   label:'Kredi Taksiti',   icon:'📅', color:'#9b6dff', kaynak:'banka',  hedef:null},
+  {id:'kk_odeme',      label:'KK Ödemesi',      icon:'💳', color:'#ec4899', kaynak:'banka',  hedef:null},
+  {id:'transfer',      label:'Hesaplar Arası',  icon:'↔️', color:'#22d3ee', kaynak:'banka',  hedef:'banka'},
+  {id:'gider',         label:'Genel Gider',     icon:'🧾', color:'#e8404a', kaynak:'kasa',   hedef:null},
+  {id:'tahsilat',      label:'Müşteri Tahsilat',icon:'💚', color:'#1db97a', kaynak:null,     hedef:'kasa'},
+  {id:'diger',         label:'Diğer',           icon:'⚙️', color:'#64748b', kaynak:null,     hedef:null},
+];
+
+// ════════════════════════════════════════
+// ↔️  HAREKET MOTORU  (MERKEZ)
+// ════════════════════════════════════════
+function hareketEkle({tip, kaynak, hedef, tutar, aciklama, tarih}){
+  const t = parseFloat(tutar);
+  if(!t||t<=0) return false;
+
+  if(kaynak){
+    if(kaynak.startsWith('kasa_')){
+      if(D.nakit[kaynak]===undefined) D.nakit[kaynak]=0;
+      D.nakit[kaynak] -= t;
+    }
+    if(kaynak.startsWith('banka_')){
+      const b=D.banka.find(x=>x.id===kaynak);
+      if(b) b.bakiye -= t;
+    }
+  }
+  if(hedef){
+    if(hedef.startsWith('kasa_')){
+      if(D.nakit[hedef]===undefined) D.nakit[hedef]=0;
+      D.nakit[hedef] += t;
+    }
+    if(hedef.startsWith('banka_')){
+      const b=D.banka.find(x=>x.id===hedef);
+      if(b) b.bakiye += t;
+    }
+  }
+
+  const h={
+    id:uid(), tip,
+    kaynak:kaynak||null, hedef:hedef||null,
+    tutar:t, aciklama:aciklama||'',
+    tarih:tarih||new Date().toISOString(),
+    created_at:new Date().toISOString()
+  };
+  if(!D.hareketler) D.hareketler=[];
+  D.hareketler.unshift(h);
+  saveAll();
+  return true;
+}
+
+function hareketGeriAl(id){
+  const h=D.hareketler.find(x=>x.id===id);
+  if(!h) return;
+  // ters işlem
+  if(h.kaynak){
+    if(h.kaynak.startsWith('kasa_')) D.nakit[h.kaynak]=(D.nakit[h.kaynak]||0)+h.tutar;
+    if(h.kaynak.startsWith('banka_')){const b=D.banka.find(x=>x.id===h.kaynak);if(b)b.bakiye+=h.tutar;}
+  }
+  if(h.hedef){
+    if(h.hedef.startsWith('kasa_')) D.nakit[h.hedef]=(D.nakit[h.hedef]||0)-h.tutar;
+    if(h.hedef.startsWith('banka_')){const b=D.banka.find(x=>x.id===h.hedef);if(b)b.bakiye-=h.tutar;}
+  }
+  D.hareketler=D.hareketler.filter(x=>x.id!==id);
+  saveAll();
+}
+
+// ════════════════════════════════════════
+// 🧭  NAVİGASYON
+// ════════════════════════════════════════
+function go(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item,.bottom-nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  const ni=document.getElementById('nav-'+id);if(ni)ni.classList.add('active');
+  const bi=document.getElementById('bnav-'+id);if(bi)bi.classList.add('active');
+  document.getElementById('pageTitle').textContent=PAGES[id].title;
+  document.getElementById('pageSub').textContent=PAGES[id].sub;
+  window.scrollTo(0,0);
+  renderAll();
+}
+
+// ════════════════════════════════════════
+// 🎨  RENDER
+// ════════════════════════════════════════
+function renderAll(){rAlerts();rDash();rHareket();rNakit();rBanka();rKredi();rKK();rCek();rBadges();}
+
+// ALERTS
+function rAlerts(){
+  const al=[];
+  D.kredi.forEach(k=>{const d=daysUntil(k.tarih);if(d<0)al.push({c:'var(--red)',i:'🚨',t:`<b>${k.banka} – ${k.adi}</b> ödemesi ${Math.abs(d)} gün geçti!`});else if(d<=7)al.push({c:'var(--red)',i:'⚠️',t:`<b>${k.banka}</b> taksit ${d===0?'BUGÜN':d+' gün içinde'}: ${fmt(k.taksit)} ₺`});});
+  D.kk.forEach(k=>{const d=daysUntil(nextDom(k.son));if(d<=5)al.push({c:'var(--orange)',i:'💳',t:`<b>${k.banka}</b> son ödeme: ${d===0?'BUGÜN':d+' gün'}`});});
+  D.cekler.filter(c=>!c.done).forEach(c=>{const d=daysUntil(c.vade);if(d<0)al.push({c:'var(--red)',i:'📄',t:`<b>${c.tur==='alinan'?'Alınan':'Verilen'} çek</b> – ${c.kisi} – ${fmt(c.tutar)} ₺ vade ${Math.abs(d)} gün geçti!`});else if(d<=3)al.push({c:'var(--orange)',i:'📄',t:`<b>${c.kisi}</b> çeki ${d===0?'BUGÜN vadesi dolacak':d+' gün sonra'}: ${fmt(c.tutar)} ₺`});});
+  document.getElementById('alertsBox').innerHTML=al.map(a=>`<div class="alert" style="--ac:${a.c}"><span style="font-size:16px">${a.i}</span><span>${a.t}</span></div>`).join('');
+}
+
+// DASHBOARD
+function rDash(){
+  const tN=Object.values(D.nakit).reduce((s,v)=>s+(v||0),0);
+  const tB=D.banka.reduce((s,b)=>s+b.bakiye,0);
+  const tK=D.kredi.reduce((s,k)=>s+k.kalan,0);
+  const tKKK=D.kk.reduce((s,k)=>s+k.kullanilan,0);
+  const tKKL=D.kk.reduce((s,k)=>s+k.limit,0);
+  const cAl=D.cekler.filter(c=>c.tip==='HESAP'&&!c.done).reduce((s,c)=>s+c.tutar,0);
+  const cEmanet=D.cekler.filter(c=>c.tip==='EMANET'&&!c.done).reduce((s,c)=>s+c.tutar,0);
+  const net=tN+tB-tK-tKKK;
+
+  document.getElementById('dashKpis').innerHTML=`
+    <div class="dash-kpi"><div class="dash-kpi-label">Nakit Kasa</div><div class="dash-kpi-val pos">${fmt(tN)} ₺</div><div class="dash-kpi-sub">2 kasa</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">Banka Bakiyesi</div><div class="dash-kpi-val" style="color:var(--blue)">${fmt(tB)} ₺</div><div class="dash-kpi-sub">${D.banka.length} hesap</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">Kredi Borcu</div><div class="dash-kpi-val neg">${fmt(tK)} ₺</div><div class="dash-kpi-sub">${D.kredi.length} kredi</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">KK Kullanım</div><div class="dash-kpi-val warn">${fmt(tKKK)} ₺</div><div class="dash-kpi-sub">${fmt(tKKL-tKKK)} ₺ boş</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">💰 Hesap Çeki</div><div class="dash-kpi-val pos">${fmt(cAl)} ₺</div><div class="dash-kpi-sub">gerçek alacak</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">🤝 Emanet Çeki</div><div class="dash-kpi-val" style="color:var(--orange)">${fmt(cEmanet)} ₺</div><div class="dash-kpi-sub">kasa etkilenmez</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">Net Pozisyon</div><div class="dash-kpi-val" style="color:${net>=0?'var(--green)':'var(--red)'}">${fmt(net)} ₺</div><div class="dash-kpi-sub">Nakit+Banka−Kredi−KK</div></div>
+    <div class="dash-kpi"><div class="dash-kpi-label">Aylık Taksit</div><div class="dash-kpi-val warn">${fmt(D.kredi.reduce((s,k)=>s+k.taksit,0))} ₺</div><div class="dash-kpi-sub">toplam</div></div>
+  `;
+
+  const yakK=D.kredi.filter(k=>daysUntil(k.tarih)<=30).sort((a,b)=>daysUntil(a.tarih)-daysUntil(b.tarih));
+  document.getElementById('d-kredi').innerHTML=yakK.length?`<table class="tbl"><tr><th>Banka</th><th>Taksit</th><th>Kalan</th></tr>${yakK.map(k=>`<tr><td><b>${k.banka}</b><br><span style="font-size:10px;color:var(--muted2)">${k.sirket}</span></td><td class="mono warn">${fmt(k.taksit)} ₺</td><td>${cdBadge(daysUntil(k.tarih))}</td></tr>`).join('')}</table>`:'<div class="empty">30 gün içinde ödeme yok</div>';
+
+  document.getElementById('d-kk').innerHTML=D.kk.length?`<table class="tbl"><tr><th>Banka</th><th>Kullanılan</th><th>Son Ödeme</th></tr>${D.kk.map(k=>`<tr><td><b>${k.banka}</b><br><span style="font-size:10px;color:var(--muted2)">${k.sahip}</span></td><td class="mono neg">${fmt(k.kullanilan)} ₺</td><td>${cdBadge(daysUntil(nextDom(k.son)))}</td></tr>`).join('')}</table>`:'<div class="empty">Kart yok</div>';
+
+  const ca=D.cekler.filter(c=>c.tur==='alinan'&&!c.done&&daysUntil(c.vade)<=30).sort((a,b)=>daysUntil(a.vade)-daysUntil(b.vade));
+  document.getElementById('d-cal').innerHTML=ca.length?`<table class="tbl"><tr><th>Kişi</th><th>Tutar</th><th>Vade</th></tr>${ca.map(c=>`<tr><td>${c.kisi}</td><td class="mono pos">${fmt(c.tutar)} ₺</td><td>${cdBadge(daysUntil(c.vade))}</td></tr>`).join('')}</table>`:'<div class="empty">Yakın vadeli tahsilat yok</div>';
+
+  const cv=D.cekler.filter(c=>c.tur==='verilen'&&!c.done&&daysUntil(c.vade)<=30).sort((a,b)=>daysUntil(a.vade)-daysUntil(b.vade));
+  document.getElementById('d-cver').innerHTML=cv.length?`<table class="tbl"><tr><th>Kişi</th><th>Tutar</th><th>Vade</th></tr>${cv.map(c=>`<tr><td>${c.kisi}</td><td class="mono neg">${fmt(c.tutar)} ₺</td><td>${cdBadge(daysUntil(c.vade))}</td></tr>`).join('')}</table>`:'<div class="empty">Yakın vadeli çek borcu yok</div>';
+}
+
+// HAREKET LİSTESİ
+function rHareket(){
+  const el=document.getElementById('hareketList');
+  const list=D.hareketler||[];
+  if(!list.length){el.innerHTML='<div class="empty">Henüz hareket yok.<br>Yukarıdaki "+ Yeni Hareket" butonunu kullanın.</div>';return;}
+
+  const locName=id=>{
+    if(!id)return'—';
+    if(id.startsWith('kasa_')){const l=NAKIT_LOCS.find(x=>x.id===id);return l?l.name:id;}
+    if(id.startsWith('banka_')){const b=D.banka.find(x=>x.id===id);return b?`${b.bank} ${b.adi}`:id;}
+    return id;
+  };
+
+  el.innerHTML=`<div class="card">
+  ${list.slice(0,100).map(h=>{
+    const ht=HTIPLER.find(t=>t.id===h.tip)||{label:h.tip,icon:'⚙️',color:'#64748b'};
+    return`<div class="hx-item">
+      <div class="hx-icon" style="background:color-mix(in srgb,${ht.color} 15%,transparent)">${ht.icon}</div>
+      <div class="hx-main">
+        <div class="hx-tip" style="color:${ht.color}">${ht.label}</div>
+        <div class="hx-meta">${locName(h.kaynak)}${h.kaynak&&h.hedef?' → ':''}${locName(h.hedef)}${h.aciklama?' · '+h.aciklama:''}</div>
+      </div>
+      <div class="hx-right">
+        <div class="hx-amt" style="color:${ht.color}">${fmt(h.tutar)} ₺</div>
+        <div class="hx-date">${fdate(h.tarih)}</div>
+        <div style="margin-top:4px"><button class="tb del" onclick="delHareket('${h.id}')">↩ Geri Al</button></div>
+      </div>
+    </div>`;
+  }).join('')}
+  </div>`;
+}
+
+// NAKİT
+function rNakit(){
+  document.getElementById('nakitBoxes').innerHTML=NAKIT_LOCS.map(l=>{
+    const bal=D.nakit[l.id]||0;
+    return`<div class="nakit-box">
+      <div class="nakit-box-name"><div class="nakit-dot" style="background:${l.color}"></div>${l.name}</div>
+      <div class="nakit-bal" style="color:${bal>=0?'var(--green)':'var(--red)'}">${fmt(bal)} ₺</div>
+      <div class="nakit-row">
+        <input class="nakit-inp" type="number" id="ni-${l.id}" placeholder="Tutar...">
+        <button class="nakit-btn in" onclick="nhModal('${l.id}','giris')">Giriş +</button>
+        <button class="nakit-btn out" onclick="nhModal('${l.id}','cikis')">Çıkış −</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const txs=(D.hareketler||[]).filter(h=>h.kaynak?.startsWith('kasa_')||h.hedef?.startsWith('kasa_')).slice(0,50);
+  document.getElementById('nakitTxList').innerHTML=txs.length?`<table class="tbl">
+    <tr><th>Tarih</th><th>Kasa</th><th>İşlem</th><th>Tutar</th><th>Not</th><th></th></tr>
+    ${txs.map(h=>{
+      const ht=HTIPLER.find(t=>t.id===h.tip)||{label:h.tip,color:'#64748b'};
+      const lok=h.hedef?.startsWith('kasa_')?h.hedef:h.kaynak;
+      const l=NAKIT_LOCS.find(x=>x.id===lok);
+      const isGiris=h.hedef?.startsWith('kasa_');
+      return`<tr>
+        <td style="font-size:11px;color:var(--muted2)">${fdate(h.tarih)}</td>
+        <td><span style="color:${l?.color||'#fff'};font-weight:600;font-size:11px">${l?.name||lok}</span></td>
+        <td><span class="badge ${isGiris?'bg-green':'bg-red'}">${ht.label}</span></td>
+        <td class="mono ${isGiris?'pos':'neg'}">${isGiris?'+':'-'}${fmt(h.tutar)} ₺</td>
+        <td style="font-size:11px;color:var(--muted2)">${h.aciklama||''}</td>
+        <td><button class="tb del" onclick="delHareket('${h.id}')">↩</button></td>
+      </tr>`;
+    }).join('')}
+  </table>`:'<div class="empty">Nakit hareketi yok</div>';
+}
+
+// BANKA
+function rBanka(){
+  const el=document.getElementById('bankaList');
+  if(!D.banka.length){el.innerHTML='<div class="empty">Henüz hesap eklenmedi.</div>';return;}
+  const tB=D.banka.reduce((s,b)=>s+b.bakiye,0);
+  el.innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <div class="stat-card" style="flex:1;min-width:140px"><div class="stat-label">Toplam</div><div class="stat-val" style="color:var(--blue)">${fmt(tB)} ₺</div></div>
+    <div class="stat-card" style="flex:1;min-width:140px"><div class="stat-label">Hesaplar</div><div class="stat-val">${D.banka.length}</div></div>
+  </div>
+  <div class="card"><table class="tbl">
+    <tr><th>Banka</th><th>Şirket</th><th>Hesap</th><th>Bakiye</th><th></th></tr>
+    ${D.banka.map(b=>`<tr>
+      <td><b>${b.bank}</b></td>
+      <td><span class="badge bg-gold">${b.sirket}</span></td>
+      <td style="color:var(--muted2);font-size:11px">${b.adi}</td>
+      <td class="mono ${b.bakiye>=0?'pos':'neg'}" style="font-size:15px">${fmt(b.bakiye)} ₺</td>
+      <td><div style="display:flex;gap:4px"><button class="tb" onclick="openBIT('${b.id}')">Güncelle</button><button class="tb del" onclick="delBanka('${b.id}')">Sil</button></div></td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+// KREDİ
+function rKredi(){
+  const el=document.getElementById('krediList');
+  if(!D.kredi.length){el.innerHTML='<div class="empty">Henüz kredi eklenmedi.</div>';return;}
+  const tK=D.kredi.reduce((s,k)=>s+k.kalan,0);
+  const tT=D.kredi.reduce((s,k)=>s+k.taksit,0);
+  el.innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <div class="stat-card" style="flex:1;min-width:130px"><div class="stat-label">Kalan Borç</div><div class="stat-val neg">${fmt(tK)} ₺</div></div>
+    <div class="stat-card" style="flex:1;min-width:130px"><div class="stat-label">Aylık Taksit</div><div class="stat-val warn">${fmt(tT)} ₺</div></div>
+    <div class="stat-card" style="flex:1;min-width:130px"><div class="stat-label">Kredi Sayısı</div><div class="stat-val">${D.kredi.length}</div></div>
+  </div>
+  <div class="card"><table class="tbl">
+    <tr><th>Banka</th><th>Şirket</th><th>Kredi</th><th>Kalan</th><th>Taksit</th><th>Faiz</th><th>Sonraki Ödeme</th><th>Gün</th><th></th></tr>
+    ${D.kredi.sort((a,b)=>daysUntil(a.tarih)-daysUntil(b.tarih)).map(k=>`<tr>
+      <td><b>${k.banka}</b></td>
+      <td><span class="badge bg-gold">${k.sirket}</span></td>
+      <td>${k.adi}${k.not?`<br><span style="font-size:10px;color:var(--muted2)">${k.not}</span>`:''}</td>
+      <td class="mono neg">${fmt(k.kalan)} ₺</td>
+      <td class="mono warn">${fmt(k.taksit)} ₺</td>
+      <td style="color:var(--muted2)">${k.faiz?'%'+k.faiz:'-'}</td>
+      <td class="mono" style="font-size:11px">${k.tarih}</td>
+      <td>${cdBadge(daysUntil(k.tarih))}</td>
+      <td><div style="display:flex;gap:4px"><button class="tb ok" onclick="odeme('${k.id}')">Ödendi</button><button class="tb del" onclick="delKredi('${k.id}')">Sil</button></div></td>
+    </tr>`).join('')}
+  </table></div>`;
+}
+
+// KREDİ KARTI
+const KKC=['#c9a84c','#3d7fff','#9b6dff','#e8404a','#1db97a','#f07d3a','#ec4899','#22d3ee'];
+function rKK(){
+  const el=document.getElementById('kkList');
+  if(!D.kk.length){el.innerHTML='<div class="empty" style="grid-column:1/-1">Kart eklenmedi.</div>';return;}
+  const tL=D.kk.reduce((s,k)=>s+k.limit,0);
+  const tK=D.kk.reduce((s,k)=>s+k.kullanilan,0);
+  el.innerHTML=`<div style="grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+    <div class="stat-card" style="flex:1;min-width:120px"><div class="stat-label">Toplam Limit</div><div class="stat-val">${fmt(tL)} ₺</div></div>
+    <div class="stat-card" style="flex:1;min-width:120px"><div class="stat-label">Kullanılan</div><div class="stat-val neg">${fmt(tK)} ₺</div></div>
+    <div class="stat-card" style="flex:1;min-width:120px"><div class="stat-label">Boş Limit</div><div class="stat-val pos">${fmt(tL-tK)} ₺</div><div class="prog-wrap"><div class="prog-fill" style="width:${Math.min(100,(tK/tL)*100||0)}%;background:${(tK/tL)>0.85?'var(--red)':'var(--green)'}"></div></div></div>
+  </div>
+  ${D.kk.map((k,i)=>{
+    const c=KKC[i%KKC.length];
+    const pct=Math.min(100,(k.kullanilan/k.limit)*100||0);
+    return`<div class="cc-card" style="--cc:${c}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div class="cc-bank" style="color:${c}">${k.banka}</div>
+          <div class="cc-owner">${k.sahip}${k.sirket&&k.sirket!==k.sahip?` · <span style="color:var(--gold2);font-size:10px">${k.sirket}</span>`:''}</div>
+        </div>
+        <div style="display:flex;gap:4px"><button class="tb" onclick="openKKU('${k.id}')">Güncelle</button><button class="tb del" onclick="delKK('${k.id}')">Sil</button></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">
+        <div><div style="font-size:10px;color:var(--muted2)">Kullanılan</div><div class="cc-used">${fmt(k.kullanilan)} ₺</div></div>
+        <div style="text-align:right"><div style="font-size:10px;color:var(--muted2)">Boş</div><div class="cc-avail">${fmt(k.limit-k.kullanilan)} ₺</div></div>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" style="width:${pct}%;background:${pct>85?'var(--red)':pct>60?'var(--orange)':c}"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;margin-bottom:10px">
+        <span style="font-size:10px;color:var(--muted2)">Limit: ${fmt(k.limit)} ₺</span>
+        <span style="font-size:10px;color:var(--muted2)">%${pct.toFixed(0)} dolu</span>
+      </div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap">
+        <div class="cc-date-item"><div>Hesap Kesim</div><div class="cc-date-val">Her ay ${k.kesim}. gün</div></div>
+        <div class="cc-date-item"><div>Son Ödeme</div><div class="cc-date-val">Her ay ${k.son}. gün</div></div>
+        <div class="cc-date-item"><div>Sonraki</div><div class="cc-date-val">${cdBadge(daysUntil(nextDom(k.son)))}</div></div>
+      </div>
+      ${k.not?`<div style="margin-top:8px;font-size:10px;color:var(--muted2)">${k.not}</div>`:''}
+    </div>`;
+  }).join('')}`;
+}
+
+// ÇEK
+let cekF='hepsi';
+function setCekF(f,btn){cekF=f;document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');rCek();}
+
+function rCek(){
+  const hesapBek=D.cekler.filter(c=>c.tip==='HESAP'&&!c.done).reduce((s,c)=>s+c.tutar,0);
+  const emanetBek=D.cekler.filter(c=>c.tip==='EMANET'&&!c.done).reduce((s,c)=>s+c.tutar,0);
+  const hesapAdet=D.cekler.filter(c=>c.tip==='HESAP'&&!c.done).length;
+  const emanetAdet=D.cekler.filter(c=>c.tip==='EMANET'&&!c.done).length;
+
+  document.getElementById('cekStats').innerHTML=`
+    <div class="dash-kpi">
+      <div class="dash-kpi-label">💰 Hesap Çeki</div>
+      <div class="dash-kpi-val pos">${fmt(hesapBek)} ₺</div>
+      <div class="dash-kpi-sub">${hesapAdet} adet bekliyor — gerçek alacak</div>
+    </div>
+    <div class="dash-kpi">
+      <div class="dash-kpi-label">🤝 Emanet Çeki</div>
+      <div class="dash-kpi-val" style="color:var(--orange)">${fmt(emanetBek)} ₺</div>
+      <div class="dash-kpi-sub">${emanetAdet} adet — kasa etkilenmez</div>
+    </div>
+    <div class="dash-kpi">
+      <div class="dash-kpi-label">Toplam Çek</div>
+      <div class="dash-kpi-val">${D.cekler.filter(c=>!c.done).length} adet</div>
+      <div class="dash-kpi-sub">${fmt(hesapBek+emanetBek)} ₺ toplam</div>
+    </div>
+    <div class="dash-kpi">
+      <div class="dash-kpi-label">Tamamlanan</div>
+      <div class="dash-kpi-val" style="color:var(--muted2)">${D.cekler.filter(c=>c.done).length} adet</div>
+      <div class="dash-kpi-sub">kapatılan çekler</div>
+    </div>
+  `;
+
+  let list=[...D.cekler].sort((a,b)=>new Date(a.vade)-new Date(b.vade));
+  if(cekF==='hesap') list=list.filter(c=>c.tip==='HESAP');
+  else if(cekF==='emanet') list=list.filter(c=>c.tip==='EMANET');
+  else if(cekF==='bekleyen') list=list.filter(c=>!c.done);
+  else if(cekF==='biten') list=list.filter(c=>c.done);
+
+  const el=document.getElementById('cekList');
+  if(!list.length){el.innerHTML='<div class="empty">Bu filtrede çek yok.</div>';return;}
+
+  el.innerHTML=list.map(c=>{
+    const isHesap=c.tip==='HESAP';
+    const isAl=c.tur==='alinan';
+    const days=daysUntil(c.vade);
+    const renk=c.done?'var(--muted)':isHesap?'var(--green)':'var(--orange)';
+
+    return`<div class="cek-card ${c.done?'done':''}">
+      <div class="cek-stripe" style="background:${renk}"></div>
+      <div style="font-size:18px">${isHesap?'💰':'🤝'}</div>
+      <div class="cek-main">
+        <div class="cek-kisi">${c.kisi}</div>
+        <div class="cek-meta" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">
+          <span class="badge ${isHesap?'bg-green':'bg-orange'}">${isHesap?'HESAP':'EMANET'}</span>
+          <span class="badge bg-gold">${c.sirket}</span>
+          ${c.yer?`<span class="badge bg-blue">${c.yer}</span>`:''}
+          ${c.no?`<span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2)">No: ${c.no}</span>`:''}
+        </div>
+        ${isHesap?'':`<div style="font-size:10px;color:var(--orange);margin-top:4px">⚠️ Hatır çeki — tahsil/ödeme kasa bakiyenizi etkilemez</div>`}
+        ${c.not?`<div style="font-size:11px;color:var(--muted2);margin-top:3px">${c.not}</div>`:''}
+        ${c.done?`<div style="font-size:11px;color:var(--green);margin-top:3px">✅ Kapatıldı — ${fdate(c.doneDate)}</div>`:''}
+      </div>
+      <div class="cek-right">
+        <div class="cek-amt" style="color:${renk}">${fmt(c.tutar)} ₺</div>
+        <div class="cek-vade">Vade: ${fdate(c.vade)}</div>
+        ${!c.done?`<div style="margin-top:3px">${cdBadge(days)}</div>`:''}
+        <div style="display:flex;gap:4px;margin-top:6px;justify-content:flex-end">
+          ${!c.done?`<button class="tb ok" onclick="cekDone('${c.id}')">${isHesap?(isAl?'Tahsil':'Ödendi'):'Kapat'}</button>`:''}
+          <button class="tb del" onclick="delCek('${c.id}')">Sil</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// BADGES
+function rBadges(){
+  const kn=D.kredi.filter(k=>daysUntil(k.tarih)<=7).length;
+  const kkn=D.kk.filter(k=>daysUntil(nextDom(k.son))<=5).length;
+  const cn=D.cekler.filter(c=>!c.done&&daysUntil(c.vade)<=3).length;
+  [['nb-kredi','bnb-kredi',kn],['nb-kk','bnb-kk',kkn],['nb-cek','bnb-cek',cn]].forEach(([s,b,n])=>{
+    const ne=document.getElementById(s),be=document.getElementById(b);
+    if(ne){ne.style.display=n?'':'none';ne.textContent=n;}
+    if(be){be.style.display=n?'':'none';be.textContent=n;}
+  });
+}
+
+// ════════════════════════════════════════
+// 📝  SAVE FUNCTIONS
+// ════════════════════════════════════════
+
+// HAREKET MODAL
+let selTip=null;
+function buildTipGrid(){
+  document.getElementById('tipGrid').innerHTML=HTIPLER.map(t=>`
+    <div class="tip-btn${selTip===t.id?' sel':''}" style="${selTip===t.id?'--tc:'+t.color:''}" onclick="selTipFn('${t.id}')">${t.icon} ${t.label}</div>
+  `).join('');
+}
+function selTipFn(id){
+  selTip=id;
+  const ht=HTIPLER.find(t=>t.id===id);
+  buildTipGrid();
+  const kr=document.getElementById('h-kaynak-row');
+  const hr=document.getElementById('h-hedef-row');
+  kr.style.display=ht.kaynak?'block':'none';
+  hr.style.display=ht.hedef?'block':'none';
+  if(ht.kaynak) buildSelect('h-kaynak', ht.kaynak, 'Kaynak seçin');
+  if(ht.hedef) buildSelect('h-hedef', ht.hedef, 'Hedef seçin');
+  document.getElementById('h-kaynak-lbl').textContent = ht.kaynak==='kasa'?'Kaynak Kasa':ht.kaynak==='banka'?'Kaynak Banka':'Kaynak';
+  document.getElementById('h-hedef-lbl').textContent = ht.hedef==='kasa'?'Hedef Kasa':ht.hedef==='banka'?'Hedef Banka':'Hedef';
+}
+function buildSelect(elId, type, placeholder){
+  const sel=document.getElementById(elId);
+  let opts=`<option value="">— ${placeholder} —</option>`;
+  if(type==='kasa'||type==='her'){
+    NAKIT_LOCS.forEach(l=>opts+=`<option value="${l.id}">${l.name}</option>`);
+  }
+  if(type==='banka'||type==='her'){
+    D.banka.forEach(b=>opts+=`<option value="${b.id}">${b.bank} – ${b.adi}</option>`);
+  }
+  sel.innerHTML=opts;
+}
+
+function saveHareket(){
+  if(!selTip){showToast('Hareket tipi seçin',true);return;}
+  const ht=HTIPLER.find(t=>t.id===selTip);
+  const tutar=parseFloat(document.getElementById('h-tutar').value);
+  const tarih=document.getElementById('h-tarih').value||new Date().toISOString();
+  const aciklama=document.getElementById('h-acik').value;
+  const kaynak=ht.kaynak?document.getElementById('h-kaynak').value:null;
+  const hedef=ht.hedef?document.getElementById('h-hedef').value:null;
+  if(!tutar||tutar<=0){showToast('Tutar girin',true);return;}
+  if(ht.kaynak&&!kaynak){showToast('Kaynak seçin',true);return;}
+  if(ht.hedef&&!hedef){showToast('Hedef seçin',true);return;}
+  hareketEkle({tip:selTip,kaynak,hedef,tutar,aciklama,tarih});
+  closeModal('hareket');showToast('Hareket kaydedildi ✓');renderAll();
+}
+
+function delHareket(id){
+  if(!confirm('Bu hareketi geri almak bakiyeleri ters yönde günceller. Devam?'))return;
+  hareketGeriAl(id);renderAll();showToast('Hareket geri alındı');
+}
+
+// BANKA
+function saveBanka(){
+  const bank=document.getElementById('b-bank').value,sirket=document.getElementById('b-sirket').value,adi=document.getElementById('b-adi').value.trim(),bakiye=parseFloat(document.getElementById('b-bakiye').value)||0,not=document.getElementById('b-not').value;
+  if(!adi){showToast('Hesap adı girin',true);return;}
+  D.banka.push({id:'banka_'+uid(),bank,sirket,adi,bakiye,not});
+  saveAll();closeModal('banka');showToast('Hesap eklendi ✓');renderAll();
+}
+function delBanka(id){if(!confirm('Hesap silinsin mi?'))return;D.banka=D.banka.filter(b=>b.id!==id);saveAll();renderAll();showToast('Silindi');}
+
+let biType='yatir';
+function setBIT(t){biType=t;['yatir','cek','set'].forEach(x=>{const b=document.getElementById('bi-'+x);if(b)b.className='btn btn-sm '+(x===t?'btn-green':'btn-outline');});document.getElementById('bi-lbl').textContent=t==='set'?'Yeni Bakiye (TL)':'Tutar (TL)';}
+function openBIT(id){const b=D.banka.find(x=>x.id===id);document.getElementById('bislem-id').value=id;document.getElementById('bislem-title').innerHTML=`${b.bank} — ${b.adi} <button class="modal-close" onclick="closeModal('bislem')">×</button>`;document.getElementById('bi-tutar').value='';document.getElementById('bi-acik').value='';biType='yatir';setBIT('yatir');openModal('bislem');}
+function saveBIT(){
+  const id=document.getElementById('bislem-id').value;
+  const tutar=parseFloat(document.getElementById('bi-tutar').value);
+  const acik=document.getElementById('bi-acik').value;
+  if(!tutar&&biType!=='set'){showToast('Tutar girin',true);return;}
+  if(biType==='yatir'){
+    hareketEkle({tip:'banka_giris',kaynak:null,hedef:id,tutar,aciklama:acik});
+  } else if(biType==='cek'){
+    hareketEkle({tip:'banka_cikis',kaynak:id,hedef:null,tutar,aciklama:acik});
+  } else {
+    // Direkt bakiye düzeltme — motoru geçmez, sadece bakiye set edilir
+    const b=D.banka.find(x=>x.id===id);
+    if(b){
+      D.hareketler.unshift({id:uid(),tip:'diger',kaynak:null,hedef:null,tutar:Math.abs(tutar-b.bakiye),aciklama:`Bakiye düzeltme: ${b.bank} ${b.adi}${acik?' – '+acik:''}`,tarih:new Date().toISOString(),created_at:new Date().toISOString()});
+      b.bakiye=tutar;
+      saveAll();
+    }
+  }
+  closeModal('bislem');showToast('İşlem tamam ✓');renderAll();
+}
+
+// KREDİ
+function saveKredi(){
+  const banka=document.getElementById('k-bank').value,sirket=document.getElementById('k-sirket').value,adi=document.getElementById('k-adi').value.trim()||document.getElementById('k-bank').value,kalan=parseFloat(document.getElementById('k-kalan').value)||0,taksit=parseFloat(document.getElementById('k-taksit').value)||0,tarih=document.getElementById('k-tarih').value,faiz=document.getElementById('k-faiz').value,not=document.getElementById('k-not').value;
+  if(!tarih){showToast('Ödeme tarihi girin',true);return;}
+  D.kredi.push({id:uid(),banka,sirket,adi,kalan,taksit,tarih,faiz,not});
+  saveAll();closeModal('kredi');showToast('Kredi eklendi ✓');renderAll();
+}
+function odeme(id){
+  const k=D.kredi.find(x=>x.id===id);
+  if(!D.banka.length){showToast('Önce banka hesabı ekleyin',true);return;}
+  // Banka seçim modalını aç
+  document.getElementById('bsec-title').innerHTML=`Kredi Ödemesi – ${k.banka} <button class="modal-close" onclick="closeModal('bsec')">×</button>`;
+  document.getElementById('bsec-refid').value=id;
+  document.getElementById('bsec-tip').value='kredi';
+  document.getElementById('bsec-kalan-row').style.display='block';
+  document.getElementById('bsec-kalan-lbl').textContent=`Yeni Kalan Borç (taksit: ${fmt(k.taksit)} ₺)`;
+  document.getElementById('bsec-kalan').value=Math.max(0,k.kalan-k.taksit).toFixed(2);
+  document.getElementById('bsec-acik').value=`${k.banka} – ${k.adi} taksiti`;
+  // Banka listesini doldur
+  document.getElementById('bsec-bank').innerHTML=D.banka.map(b=>`<option value="${b.id}">${b.bank} – ${b.adi} (${fmt(b.bakiye)} ₺)</option>`).join('');
+  openModal('bsec');
+}
+function delKredi(id){if(!confirm('Silinsin mi?'))return;D.kredi=D.kredi.filter(k=>k.id!==id);saveAll();renderAll();}
+function importXls(inp){inp.value='';importKrediData();}
+
+function importKrediData(){
+  const KREDI_DATA = [{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-04-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-04-06","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-04-06","tutar":708445.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-04-07","tutar":808562.45},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-04-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-04-13","tutar":843007.52},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-04-14","tutar":6611475.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-04-15","tutar":1697282.3},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-04-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-04-20","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-04-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-04-27","tutar":544553.0},{"sirket":"ÖZ ERTEK GIDA","banka":"TÜRKİYE FİNANS","tarih":"2026-04-30","tutar":826085.37},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-05-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-05-04","tutar":788022.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-05-05","tutar":708445.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-05-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-05-06","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-05-07","tutar":808562.45},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-05-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-05-13","tutar":843007.52},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-05-15","tutar":1697282.3},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-05-18","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-05-20","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-05-25","tutar":147395.49},{"sirket":"ÖZ ERTEK GIDA","banka":"TÜRKİYE FİNANS","tarih":"2026-06-01","tutar":826085.37},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-06-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-06-02","tutar":7400000.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-06-03","tutar":788022.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-06-05","tutar":708445.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-06-08","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-06-08","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-06-08","tutar":808562.45},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-06-15","tutar":1697282.3},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-06-15","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-06-15","tutar":843007.52},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-06-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-06-19","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-06-24","tutar":147395.49},{"sirket":"ÖZ ERTEK GIDA","banka":"TÜRKİYE FİNANS","tarih":"2026-06-30","tutar":826085.37},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-07-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-07-03","tutar":788022.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-07-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-07-06","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-07-06","tutar":708445.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-07-07","tutar":808562.45},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-07-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-07-13","tutar":843007.52},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-07-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-07-20","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-07-24","tutar":147395.49},{"sirket":"ÖZ ERTEK GIDA","banka":"TÜRKİYE FİNANS","tarih":"2026-07-30","tutar":826085.37},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-08-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-08-03","tutar":788022.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-08-05","tutar":708445.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-08-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-08-06","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-08-07","tutar":808562.45},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-08-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-08-13","tutar":843007.52},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-08-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-08-19","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-08-24","tutar":147395.49},{"sirket":"ÖZ ERTEK GIDA","banka":"TÜRKİYE FİNANS","tarih":"2026-08-31","tutar":826085.37},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-09-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-09-03","tutar":788022.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-09-07","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-09-07","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-09-07","tutar":808562.45},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-09-14","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-09-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-09-21","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-09-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-10-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"KUVEYT TÜRK","tarih":"2026-10-05","tutar":788022.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-10-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-10-06","tutar":362469.0},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-10-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-10-19","tutar":1027977.29},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-10-19","tutar":601068.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-10-26","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-11-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-11-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-11-06","tutar":362469.0},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-11-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-11-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-11-19","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-11-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2026-12-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2026-12-07","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2026-12-07","tutar":362469.0},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2026-12-14","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2026-12-17","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2026-12-21","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2026-12-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-01-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2027-01-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2027-01-06","tutar":362469.0},{"sirket":"MEHMET ERTEK","banka":"TÜRKİYE FİNANS","tarih":"2027-01-13","tutar":66820.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2027-01-18","tutar":601068.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"TÜRKİYE FİNANS","tarih":"2027-01-19","tutar":1027977.29},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-01-25","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-02-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2027-02-08","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2027-02-08","tutar":362469.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"ZİRAAT KATILIM","tarih":"2027-02-17","tutar":601068.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-02-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-03-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2027-03-08","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2027-03-08","tutar":362469.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-03-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-04-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2027-04-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2027-04-06","tutar":362469.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-04-26","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-05-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"İŞ BANKASI KGF (3 M)","tarih":"2027-05-06","tutar":222019.68},{"sirket":"ÖZ ERTEK GIDA","banka":"İŞ BANKASI KGF (5 M)","tarih":"2027-05-06","tutar":362469.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-05-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-06-02","tutar":308168.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-06-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-07-02","tutar":308168.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-07-26","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-08-02","tutar":308168.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-08-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-09-02","tutar":308168.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-09-24","tutar":147395.49},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-10-02","tutar":308168.0},{"sirket":"ÖZ ERTEK GIDA","banka":"ZİRAAT BANKASI","tarih":"2027-10-25","tutar":147395.67},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-11-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2027-12-02","tutar":308168.0},{"sirket":"ERTEK TAVUKÇULUK","banka":"AKBANK","tarih":"2028-01-02","tutar":308168.0}];
+
+  // Mevcut kayıtlarla çakışma kontrolü — tarih+banka+tutar kombinasyonu
+  const mevcut = new Set(D.kredi.map(k=>`${k.tarih}_${k.banka}_${k.taksit}`));
+  let eklenen = 0, atlanan = 0;
+
+  KREDI_DATA.forEach(r => {
+    const key = `${r.tarih}_${r.banka}_${r.tutar}`;
+    if(mevcut.has(key)){ atlanan++; return; }
+    D.kredi.push({
+      id: uid(),
+      sirket: r.sirket,
+      banka: r.banka,
+      adi: r.banka,
+      kalan: r.tutar,
+      taksit: r.tutar,
+      tarih: r.tarih,
+      faiz: '',
+      not: 'Excel import'
+    });
+    eklenen++;
+  });
+
+  saveAll();
+  renderAll();
+  showToast(`✓ ${eklenen} taksit yüklendi${atlanan ? ', '+atlanan+' zaten vardı' : ''}`);
+}
+
+// KK
+function saveKK(){
+  const banka=document.getElementById('kk-bank').value,sahip=document.getElementById('kk-sahip').value,limit=parseFloat(document.getElementById('kk-limit').value)||0,kullanilan=parseFloat(document.getElementById('kk-kull').value)||0,kesim=parseInt(document.getElementById('kk-kesim').value)||1,son=parseInt(document.getElementById('kk-son').value)||1,not=document.getElementById('kk-not').value;
+  if(!limit){showToast('Limit girin',true);return;}
+  D.kk.push({id:uid(),banka,sahip,limit,kullanilan,kesim,son,not});
+  saveAll();closeModal('kk');showToast('Kart eklendi ✓');renderAll();
+}
+
+function importKKData(){
+  const KK_DATA=[{"sahip":"ERTEK TAVUKÇULUK","sirket":"Ertek Tavukçuluk","banka":"KUVEYT TÜRK","limit":850000,"kesim":8,"son":18},{"sahip":"ERTEK TAVUKÇULUK","sirket":"Ertek Tavukçuluk","banka":"ZİRAAT BANK","limit":4500000,"kesim":2,"son":12},{"sahip":"ÖZ ERTEK GIDA","sirket":"Öz Ertek Gıda","banka":"VAKIF BANK","limit":500000,"kesim":23,"son":3},{"sahip":"ÖZ ERTEK GIDA","sirket":"Öz Ertek Gıda","banka":"ZİRAAT BANK","limit":3250000,"kesim":21,"son":2},{"sahip":"ERTEK TAVUKÇULUK","sirket":"Ertek Tavukçuluk","banka":"İŞ BANKASI","limit":5000000,"kesim":15,"son":20},{"sahip":"MEHMET ERTEK","sirket":"Ertek Tavukçuluk","banka":"İŞ BANKASI","limit":400000,"kesim":25,"son":5},{"sahip":"ERTEK TAVUKÇULUK","sirket":"Ertek Tavukçuluk","banka":"ZİRAAT KATILIM","limit":500000,"kesim":15,"son":25},{"sahip":"ERTEK TAVUKÇULUK","sirket":"Ertek Tavukçuluk","banka":"AKBANK","limit":500000,"kesim":17,"son":27},{"sahip":"ÖZ ERTEK GIDA","sirket":"Öz Ertek Gıda","banka":"AKBANK","limit":500000,"kesim":17,"son":27},{"sahip":"MEHMET ERTEK","sirket":"Ertek Tavukçuluk","banka":"HALK BANK","limit":500000,"kesim":10,"son":20},{"sahip":"MEHMET ERTEK","sirket":"Ertek Tavukçuluk","banka":"KUVEYT TÜRK","limit":1000000,"kesim":15,"son":25},{"sahip":"YUSUF KOÇ","sirket":"Ertek Tavukçuluk","banka":"AKBANK","limit":575000,"kesim":8,"son":18},{"sahip":"ENBİYA ERTEK","sirket":"Ertek Tavukçuluk","banka":"KUVEYT TÜRK","limit":500000,"kesim":15,"son":25},{"sahip":"ENBİYA ERTEK","sirket":"Ertek Tavukçuluk","banka":"AKBANK","limit":600000,"kesim":24,"son":4},{"sahip":"ENBİYA ERTEK","sirket":"Ertek Tavukçuluk","banka":"TÜRKİYE FİNANS","limit":200000,"kesim":29,"son":8},{"sahip":"ENBİYA ERTEK","sirket":"Ertek Tavukçuluk","banka":"GARANTİ","limit":100000,"kesim":30,"son":9}];
+
+  // Çakışma kontrolü: aynı banka + limit + kesim günü
+  const mevcut=new Set(D.kk.map(k=>`${k.banka}_${k.limit}_${k.kesim}`));
+  let eklenen=0, atlanan=0;
+
+  KK_DATA.forEach(r=>{
+    const key=`${r.banka}_${r.limit}_${r.kesim}`;
+    if(mevcut.has(key)){atlanan++;return;}
+    D.kk.push({
+      id:uid(),
+      banka:r.banka,
+      sahip:r.sahip,        // gerçek kart sahibi (Mehmet Ertek, Enbiya vs.)
+      sirket:r.sirket,       // sorumluluk şirketi
+      limit:r.limit,
+      kullanilan:0,          // başlangıçta 0 — sonra güncellenir
+      kesim:r.kesim,
+      son:r.son,
+      not:''
+    });
+    eklenen++;
+  });
+
+  saveAll();renderAll();
+  showToast(`✓ ${eklenen} kart yüklendi${atlanan?', '+atlanan+' zaten vardı':''}`);
+}
+function openKKU(id){const k=D.kk.find(x=>x.id===id);document.getElementById('kku-id').value=id;document.getElementById('kku-kull').value=k.kullanilan;document.getElementById('kku-not').value=k.not||'';openModal('kku');}
+function saveKKU(){const id=document.getElementById('kku-id').value,k=D.kk.find(x=>x.id===id);k.kullanilan=parseFloat(document.getElementById('kku-kull').value)||0;k.not=document.getElementById('kku-not').value;saveAll();closeModal('kku');showToast('Güncellendi ✓');renderAll();}
+function delKK(id){if(!confirm('Silinsin mi?'))return;D.kk=D.kk.filter(k=>k.id!==id);saveAll();renderAll();}
+
+// BANKA SEÇİM ONAY — Kredi & Çek ortak modal
+function bsecOnayla(){
+  const refid=document.getElementById('bsec-refid').value;
+  const tip=document.getElementById('bsec-tip').value;
+  const bankaId=document.getElementById('bsec-bank').value;
+  const acik=document.getElementById('bsec-acik').value;
+  if(!bankaId){showToast('Banka seçin',true);return;}
+
+  if(tip==='kredi'){
+    const k=D.kredi.find(x=>x.id===refid);
+    const yeniKalan=parseFloat(document.getElementById('bsec-kalan').value)||0;
+    hareketEkle({tip:'kredi_odeme',kaynak:bankaId,hedef:null,tutar:k.taksit,aciklama:acik});
+    k.kalan=yeniKalan;
+    const d=new Date(k.tarih);d.setMonth(d.getMonth()+1);k.tarih=d.toISOString().slice(0,10);
+    saveAll();closeModal('bsec');showToast('Kredi ödendi, vade ileri alındı ✓');renderAll();
+
+  } else if(tip==='cek'){
+    const c=D.cekler.find(x=>x.id===refid);
+    c.done=true;c.doneDate=todayStr();
+    if(c.tur==='alinan'){
+      hareketEkle({tip:'cek_tahsil',kaynak:null,hedef:bankaId,tutar:c.tutar,aciklama:acik});
+    } else {
+      hareketEkle({tip:'banka_odeme',kaynak:bankaId,hedef:null,tutar:c.tutar,aciklama:acik});
+    }
+    saveAll();closeModal('bsec');showToast(c.tur==='alinan'?'Tahsil edildi ✓':'Ödendi ✓');renderAll();
+  }
+}
+
+// ÇEK
+let cekTur='alinan';
+let cekTip='HESAP';
+
+function setCekTur(t){
+  cekTur=t;
+  document.getElementById('cek-al-btn').className='btn btn-sm '+(t==='alinan'?'btn-green':'btn-outline');
+  document.getElementById('cek-ver-btn').className='btn btn-sm '+(t==='verilen'?'btn-red-s':'btn-outline');
+  document.getElementById('cek-kisi-lbl').textContent=t==='alinan'?'Borçlu (Müşteri)':'Alan (Tedarikçi)';
+}
+
+function setCekTip(tip){
+  cekTip=tip;
+  document.getElementById('cek-hesap-btn').className='btn btn-sm '+(tip==='HESAP'?'btn-gold':'btn-outline');
+  document.getElementById('cek-emanet-btn').className='btn btn-sm '+(tip==='EMANET'?'btn-outline btn-sm':'')+' '+(tip==='EMANET'?'btn-green':'btn-outline');
+  // Emanet ise bilgi notu göster
+  const note=document.getElementById('cek-tip-note');
+  if(note) note.style.display=tip==='EMANET'?'block':'none';
+}
+
+function saveCek(){
+  const kisi=document.getElementById('cek-kisi').value.trim();
+  const sirket=document.getElementById('cek-sirket').value;
+  const tutar=parseFloat(document.getElementById('cek-tutar').value)||0;
+  const vade=document.getElementById('cek-vade').value;
+  const no=document.getElementById('cek-no').value.trim();
+  const yer=document.getElementById('cek-yer').value.trim();
+  const not=document.getElementById('cek-not').value;
+  if(!kisi){showToast('Kişi girin',true);return;}
+  if(!tutar){showToast('Tutar girin',true);return;}
+  if(!vade){showToast('Vade girin',true);return;}
+  D.cekler.push({
+    id:uid(), tur:cekTur, tip:cekTip,
+    kisi, sirket, tutar, vade,
+    no, yer, not,
+    done:false, doneDate:null, ts:Date.now()
+  });
+  saveAll();closeModal('cek');showToast('Çek eklendi ✓');renderAll();
+}
+
+function cekDone(id){
+  const c=D.cekler.find(x=>x.id===id);
+  const isEmanet=c.tip==='EMANET';
+
+  // Emanet çekler için banka seçimi gerekmez — kasa nötr
+  if(isEmanet){
+    if(!confirm(`EMANET ÇEK\n${c.kisi} – ${fmt(c.tutar)} ₺\nBu çek kasa bakiyenizi etkilemez.\nTamamlandı olarak işaretle?`))return;
+    c.done=true;c.doneDate=todayStr();
+    // Sadece log — bakiye değişmez
+    D.hareketler.unshift({id:uid(),tip:'diger',kaynak:null,hedef:null,tutar:c.tutar,aciklama:`Emanet çek kapandı: ${c.kisi}`,tarih:new Date().toISOString(),created_at:new Date().toISOString()});
+    saveAll();showToast('Emanet çek kapatıldı ✓');renderAll();
+    return;
+  }
+
+  // Hesap çeki → banka seçim modalı
+  if(!D.banka.length){showToast('Önce banka hesabı ekleyin',true);return;}
+  const isAl=c.tur==='alinan';
+  document.getElementById('bsec-title').innerHTML=`${isAl?'Çek Tahsil':'Çek Ödeme'} – ${c.kisi} <button class="modal-close" onclick="closeModal(\'bsec\')">×</button>`;
+  document.getElementById('bsec-refid').value=id;
+  document.getElementById('bsec-tip').value='cek';
+  document.getElementById('bsec-kalan-row').style.display='none';
+  document.getElementById('bsec-acik').value=`${isAl?'Çek tahsil':'Çek ödeme'}: ${c.kisi}`;
+  document.getElementById('bsec-bank').innerHTML=D.banka.map(b=>`<option value="${b.id}">${b.bank} – ${b.adi} (${fmt(b.bakiye)} ₺)</option>`).join('');
+  openModal('bsec');
+}
+
+function delCek(id){if(!confirm('Silinsin mi?'))return;D.cekler=D.cekler.filter(c=>c.id!==id);saveAll();renderAll();}
+
+// ÇEK IMPORT
+function importCekData(){
+  const CEK_DATA = [{"cekno":"6202222","sirket":"ERTEK TAVUKÇULUK","tutar":101000.0,"durum":"HESAP","borclu":"HAMZA AYDOĞDU","vade":"2026-04-06","yer":"KUVEYT"},{"cekno":"3512890","sirket":"ÖZ ERTEK","tutar":2000000.0,"durum":"EMANET","borclu":"SALİH KARAKOÇ","vade":"2026-04-20","yer":"KUVEYT"},{"cekno":"3379996","sirket":"ERTEK TAVUKÇULUK","tutar":200000.0,"durum":"HESAP","borclu":"ÖZ ŞANLI","vade":"2026-04-30","yer":"KUVEYT"},{"cekno":"1041316","sirket":"ERTEK TAVUKÇULUK","tutar":1500000.0,"durum":"EMANET","borclu":"MEKA HAYVANCILIK","vade":"2026-05-04","yer":"KUVEYT"},{"cekno":"29976","sirket":"ERTEK TAVUKÇULUK","tutar":500000.0,"durum":"EMANET","borclu":"ÖZ ŞANLI","vade":"2026-05-05","yer":"KUVEYT"},{"cekno":"29977","sirket":"ERTEK TAVUKÇULUK","tutar":500000.0,"durum":"EMANET","borclu":"ÖZ ŞANLI","vade":"2026-05-11","yer":"KUVEYT"},{"cekno":"29978","sirket":"ERTEK TAVUKÇULUK","tutar":500000.0,"durum":"EMANET","borclu":"ÖZ ŞANLI","vade":"2026-05-15","yer":"KUVEYT"},{"cekno":"3210060","sirket":"ERTEK TAVUKÇULUK","tutar":275000.0,"durum":"HESAP","borclu":"ONUR HAZIR YEMEK","vade":"2026-05-18","yer":"KUVEYT"},{"cekno":"9109894","sirket":"ERTEK TAVUKÇULUK","tutar":150000.0,"durum":"HESAP","borclu":"EYÜP ÇIĞRIM","vade":"2026-06-01","yer":"KUVEYT"},{"cekno":"60028","sirket":"ÖZ ERTEK","tutar":250000.0,"durum":"HESAP","borclu":"ŞAN NAKLİYE","vade":"2026-08-17","yer":"KUVEYT"},{"cekno":"Z1042434","sirket":"ERTEK TAVUKÇULUK","tutar":4000000.0,"durum":"EMANET","borclu":"MEKA HAYVANCILIK","vade":"2026-08-08","yer":"T. FİNANS"},{"cekno":"3379996","sirket":"ERTEK TAVUKÇULUK","tutar":200000.0,"durum":"HESAP","borclu":"ÖZ ŞANLI","vade":"2026-04-30","yer":"KUVEYT"},{"cekno":"4810383","sirket":"ÖZ ERTEK","tutar":200000.0,"durum":"HESAP","borclu":"ZAMAN NAK(FERHAT ERTAŞ)","vade":"2026-06-30","yer":"KUVEYT"},{"cekno":"48385","sirket":"ERTEK TAVUKÇULUK","tutar":250000.0,"durum":"HESAP","borclu":"TUSAN YAPI(MT KEVİR)","vade":"2026-05-31","yer":"KUVEYT"},{"cekno":"7009753","sirket":"ERTEK TAVUKÇULUK","tutar":350000.0,"durum":"HESAP","borclu":"RİŞVANLI PAZ","vade":"2026-04-11","yer":"KUVEYT"},{"cekno":"5983951","sirket":"ERTEK TAVUKÇULUK","tutar":160000.0,"durum":"HESAP","borclu":"ARANLAR GIDA(ÖĞRETMENİM)","vade":"2026-05-30","yer":"KUVEYT"},{"cekno":"21640","sirket":"ÖZ ERTEK","tutar":350000.0,"durum":"HESAP","borclu":"MUSTAFA ES (HASAN AKGÜL)","vade":"2026-04-20","yer":"KASADA"},{"cekno":"620223","sirket":"ERTEK TAVUKÇULUK","tutar":100000.0,"durum":"HESAP","borclu":"MEHMET TURAN (ENGİN AKÇA)","vade":"2026-05-18","yer":"KASADA"}];
+
+  const mevcut=new Set(D.cekler.map(c=>c.no));
+  let eklenen=0,atlanan=0;
+
+  CEK_DATA.forEach(r=>{
+    if(mevcut.has(r.cekno)){atlanan++;return;}
+    D.cekler.push({
+      id:uid(),
+      tur:'alinan',           // tümü müşteriden alınan
+      tip:r.durum,            // HESAP veya EMANET
+      kisi:r.borclu,
+      sirket:r.sirket==='ÖZ ERTEK'?'Öz Ertek Gıda':'Ertek Tavukçuluk',
+      tutar:r.tutar,
+      vade:r.vade,
+      no:r.cekno,
+      yer:r.yer,
+      not:'',
+      done:false,doneDate:null,ts:Date.now()
+    });
+    eklenen++;
+  });
+
+  saveAll();renderAll();
+  showToast(`✓ ${eklenen} çek yüklendi${atlanan?', '+atlanan+' zaten vardı':''}`);
+}
+
+// NAKİT
+function nhModal(lok,yon){
+  const v=parseFloat(document.getElementById('ni-'+lok).value);
+  if(!v||v<=0){showToast('Tutar girin',true);return;}
+  const l=NAKIT_LOCS.find(x=>x.id===lok);
+  document.getElementById('nh-lok').value=lok;document.getElementById('nh-yon').value=yon;
+  document.getElementById('nh-title').innerHTML=`${yon==='giris'?'Nakit Giriş':'Nakit Çıkış'} – ${l.name} <button class="modal-close" onclick="closeModal('nh')">×</button>`;
+  document.getElementById('nh-tutar').value=v;document.getElementById('nh-tarih').value=todayStr();document.getElementById('nh-acik').value='';
+  document.getElementById('ni-'+lok).value='';
+  openModal('nh');
+}
+function saveNH(){
+  const lok=document.getElementById('nh-lok').value,yon=document.getElementById('nh-yon').value,tutar=parseFloat(document.getElementById('nh-tutar').value),aciklama=document.getElementById('nh-acik').value,tarih=document.getElementById('nh-tarih').value;
+  if(!tutar||tutar<=0){showToast('Tutar girin',true);return;}
+  hareketEkle({tip:yon==='giris'?'nakit_giris':'nakit_cikis',kaynak:yon==='cikis'?lok:null,hedef:yon==='giris'?lok:null,tutar,aciklama,tarih});
+  closeModal('nh');showToast('Kaydedildi ✓');renderAll();
+}
+
+// AYARLAR
+function resetAll(){if(!confirm('TÜM VERİLER SİLİNECEK! Emin misiniz?'))return;if(!confirm('Son kez: Bu işlem geri alınamaz!'))return;localStorage.removeItem(SK);D=defData();saveLocal();renderAll();showToast('Sıfırlandı');}
+function exportJSON(){const a=document.createElement('a');a.href='data:application/json,'+encodeURIComponent(JSON.stringify(D,null,2));a.download='ertek-yedek-'+todayStr()+'.json';a.click();}
+function importJSON(inp){const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=e=>{try{D={...defData(),...JSON.parse(e.target.result)};saveAll();renderAll();showToast('Yüklendi ✓');}catch{showToast('Geçersiz dosya',true);}};r.readAsText(f);inp.value='';}
+
+// MODAL
+function openModal(id){
+  if(id==='hareket'){selTip=null;buildTipGrid();document.getElementById('h-tutar').value='';document.getElementById('h-tarih').value=todayStr();document.getElementById('h-acik').value='';document.getElementById('h-kaynak-row').style.display='none';document.getElementById('h-hedef-row').style.display='none';}
+  document.getElementById('modal-'+id).classList.add('open');
+}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});});
+
+// TOAST
+function showToast(msg,isErr=false,isWarn=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast'+(isErr?' err':isWarn?' warn':'');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// INIT
+document.getElementById('todayBadge').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+// Cloud sync başlat
+cloudPull().then(()=>renderAll());
+setSyncStatus('syncing');
+renderAll();
+</script>
+
 </body>
 </html>
