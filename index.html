@@ -756,13 +756,10 @@ function hareketGeriAl(id){
     if(h.hedef.startsWith('banka_')){const b=D.banka.find(x=>x.id===h.hedef);if(b)b.bakiye-=h.tutar;}
   }
 
-  // ✅ Kredi ödemesi geri alınırsa → kredi kalan + tarih geri dönsün
-  if(h.tip==='kredi_odeme'&&h.meta&&h.meta.krediId){
-    const k=D.kredi.find(x=>x.id===h.meta.krediId);
-    if(k){
-      k.kalan=h.meta.eskiKalan;
-      k.tarih=h.meta.eskiTarih;
-    }
+  // Kredi ödemesi geri alınırsa → taksit kaydını geri yükle
+  if(h.tip==='kredi_odeme'&&h.meta&&h.meta.krediSnapshot){
+    const zaten=D.kredi.find(x=>x.id===h.meta.krediId);
+    if(!zaten)D.kredi.push({...h.meta.krediSnapshot});
   }
 
   // ✅ Çek tahsil/ödeme geri alınırsa → çeki done=false yap
@@ -1145,9 +1142,7 @@ function odeme(id){
   document.getElementById('bsec-title').innerHTML=`Kredi Ödemesi – ${k.banka} <button class="modal-close" onclick="closeModal('bsec')">×</button>`;
   document.getElementById('bsec-refid').value=id;
   document.getElementById('bsec-tip').value='kredi';
-  document.getElementById('bsec-kalan-row').style.display='block';
-  document.getElementById('bsec-kalan-lbl').textContent=`Yeni Kalan Borç (taksit: ${fmt(k.taksit)} ₺)`;
-  document.getElementById('bsec-kalan').value=Math.max(0,k.kalan-k.taksit).toFixed(2);
+  document.getElementById('bsec-kalan-row').style.display='none';
   document.getElementById('bsec-acik').value=`${k.banka} – ${k.adi} taksiti`;
   document.getElementById('bsec-bank').innerHTML=D.banka.map(b=>`<option value="${b.id}">${b.bank} – ${b.adi} (${fmt(b.bakiye)} ₺)</option>`).join('');
   openModal('bsec');
@@ -1176,14 +1171,11 @@ function bsecOnayla(){
 
   if(tip==='kredi'){
     const k=D.kredi.find(x=>x.id===refid);
-    const yeniKalan=parseFloat(document.getElementById('bsec-kalan').value)||0;
-    const eskiKalan=k.kalan;
-    const eskiTarih=k.tarih;
-    k.kalan=yeniKalan;
-    const d=new Date(k.tarih);d.setMonth(d.getMonth()+1);k.tarih=d.toISOString().slice(0,10);
-    // meta ile hareket ekle — geri alınırsa kredi state düzeltilir
-    hareketEkle({tip:'kredi_odeme',kaynak:bankaId,hedef:null,tutar:k.taksit,aciklama:acik,meta:{krediId:refid,eskiKalan,eskiTarih}});
-    saveAll();closeModal('bsec');showToast('Kredi ödendi, vade ileri alındı ✓');renderAll();
+    const krediSnapshot={...k};
+    // Taksit ödendi → kaydı listeden sil (geri alma için snapshot meta'da saklanır)
+    D.kredi=D.kredi.filter(x=>x.id!==refid);
+    hareketEkle({tip:'kredi_odeme',kaynak:bankaId,hedef:null,tutar:k.taksit,aciklama:acik,meta:{krediId:refid,krediSnapshot}});
+    saveAll();closeModal('bsec');showToast('Taksit ödendi, listeden silindi ✓');renderAll();
 
   } else if(tip==='cek'){
     const c=D.cekler.find(x=>x.id===refid);
