@@ -588,8 +588,11 @@ async function sbFetch(method,table,body=null,filter=''){
   const url=`${SB_URL}/rest/v1/${table}${filter}`;
   const opts={method,headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':method==='POST'?'resolution=merge-duplicates,return=representation':'return=representation'}};
   if(body)opts.body=JSON.stringify(body);
-  try{const r=await fetch(url,opts);if(r.ok)return await r.json();return null;}
-  catch(e){console.error('sbFetch',e);return null;}
+  const ctrl=new AbortController();
+  const timer=setTimeout(()=>ctrl.abort(),10000);
+  opts.signal=ctrl.signal;
+  try{const r=await fetch(url,opts);clearTimeout(timer);if(r.ok)return await r.json();return null;}
+  catch(e){clearTimeout(timer);console.error('sbFetch',e);return null;}
 }
 async function cloudPush(){
   setSyncStatus('syncing');
@@ -598,6 +601,8 @@ async function cloudPush(){
 }
 async function cloudPull(){
   const r=await sbFetch('GET','ertek_data',null,'?id=eq.main');
+  if(r===null){setSyncStatus('err');return;}
+  setSyncStatus('ok');
   if(r&&r[0]&&r[0].data){try{D=JSON.parse(r[0].data);saveLocal();renderAll();}catch(e){console.error(e);}}
 }
 function setSyncStatus(s){
@@ -639,7 +644,8 @@ function rSyncBox(s){
         <div style="width:10px;height:10px;border-radius:50%;background:var(--orange);animation:pulse 1s infinite"></div>
         <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--orange)">Bağlanıyor...</div>
       </div>
-      <div style="font-size:12px;color:var(--muted2)">Supabase cloud sync başlatılıyor...</div>
+      <div style="font-size:12px;color:var(--muted2);margin-bottom:12px">Supabase cloud sync başlatılıyor...</div>
+      <button class="btn btn-outline btn-sm" onclick="setSyncStatus('syncing');cloudPull().then(()=>showToast('Bağlantı kuruldu ✓')).catch(()=>setSyncStatus('err'))">🔄 Tekrar Dene</button>
     </div>`;
   }
 }
