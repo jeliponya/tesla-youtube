@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Barkod Okuma & Fiş Testi</title>
+<style>
+:root{
+  --bg:#f4f6fa;--card:#ffffff;--border:#e2e6f0;
+  --text:#1a2030;--muted:#6b7690;
+  --blue:#2f6fed;--green:#1cae6b;--red:#e5484d;--orange:#e08a2c;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;padding-bottom:60px;}
+header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 20px;}
+header h1{font-size:17px;font-weight:700;}
+header p{font-size:12px;color:var(--muted);margin-top:2px;}
+main{max-width:520px;margin:0 auto;padding:16px;}
+.step{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:16px;display:none;}
+.step.show{display:block;}
+.step-title{font-size:14px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.btn{border:none;border-radius:8px;font-size:13px;font-weight:600;padding:10px 16px;cursor:pointer;transition:opacity .15s;}
+.btn:hover{opacity:.85;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-blue{background:var(--blue);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-red{background:var(--red);color:#fff;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-sm{padding:6px 11px;font-size:12px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+input,textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:9px 11px;font-size:14px;outline:none;}
+input:focus{border-color:var(--blue);}
+label{display:block;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;font-weight:600;}
+.file-drop{border:2px dashed var(--border);border-radius:10px;padding:20px;text-align:center;cursor:pointer;}
+.file-drop:hover{border-color:var(--blue);}
+.hint{font-size:11px;color:var(--muted);line-height:1.6;margin-top:10px;background:var(--bg);border-radius:8px;padding:10px 12px;}
+.hint code{background:#e8ecf5;padding:1px 5px;border-radius:4px;font-family:monospace;}
+#reader{width:100%;border-radius:10px;overflow:hidden;background:#000;min-height:220px;}
+.manual-row{display:flex;gap:8px;margin-top:12px;}
+.manual-row input{flex:1;}
+.item-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);gap:8px;}
+.item-row:last-child{border-bottom:none;}
+.item-name{font-weight:600;font-size:13px;}
+.item-code{font-size:11px;color:var(--muted);font-family:monospace;}
+.item-price{font-size:11px;color:var(--muted);}
+.qty-ctrl{display:flex;align-items:center;gap:6px;background:var(--bg);border-radius:8px;padding:3px 6px;}
+.qty-btn{width:22px;height:22px;border-radius:6px;border:none;background:var(--border);cursor:pointer;font-weight:700;}
+.qty-val{width:22px;text-align:center;font-weight:700;font-size:13px;}
+.del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:2px 4px;}
+.summary{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:2px solid var(--border);}
+.summary b{font-size:16px;}
+.empty{text-align:center;color:var(--muted);padding:20px;font-size:12px;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;background:#eaf1ff;color:var(--blue);}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--green);color:#fff;font-weight:600;font-size:13px;padding:10px 20px;border-radius:8px;transition:transform .25s;z-index:999;max-width:90vw;text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.err{background:var(--red);}
+.toast.warn{background:var(--orange);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧪 Barkod Okuma & Fiş Testi</h1>
+  <p>Ertek Finans'tan bağımsız — sadece test amaçlı. Stok takibi yapılmaz.</p>
+</header>
+
+<main>
+
+  <!-- ADIM 1: KATALOG YÜKLE -->
+  <div class="step show" id="step1">
+    <div class="step-title"><span class="step-num">1</span>Tanılı Barkod Listesini Yükle</div>
+    <div class="step-sub">Test için kullanılacak barkod + ürün adı listesini CSV veya JSON dosyası olarak yükleyin.</div>
+
+    <div class="file-drop" onclick="document.getElementById('catalogFile').click()">
+      📂 Dosya seçmek için tıklayın (.csv veya .json)
+    </div>
+    <input type="file" id="catalogFile" accept=".csv,.json" style="display:none">
+
+    <div class="hint">
+      <b>CSV formatı</b> (ilk satır başlık, otomatik atlanır):<br>
+      <code>barkod,urun_adi,fiyat</code><br>
+      <code>8690123456789,Süt 1L,45.90</code><br><br>
+      <b>JSON formatı</b> (fiyat opsiyonel):<br>
+      <code>[{"barkod":"8690123456789","urun_adi":"Süt 1L","fiyat":45.90}]</code>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-outline btn-sm" onclick="downloadSampleCSV()">⬇️ Örnek CSV indir</button>
+    </div>
+
+    <div id="catalogPreview" style="margin-top:14px;"></div>
+  </div>
+
+  <!-- ADIM 2: KAMERAYLA TARA -->
+  <div class="step" id="step2">
+    <div class="step-title"><span class="step-num">2</span>Kamerayla Barkod Oku</div>
+    <div class="step-sub">Kamerayı barkoda doğrultun. Katalogda olmayan barkodlar eklenmez, uyarı verilir.</div>
+
+    <div id="reader"></div>
+    <div class="btn-row">
+      <button class="btn btn-blue" id="startBtn" onclick="startScanner()">📷 Kamerayı Başlat</button>
+      <button class="btn btn-outline" id="stopBtn" style="display:none" onclick="stopScanner()">⏹ Kamerayı Durdur</button>
+    </div>
+
+    <div class="manual-row">
+      <input type="text" id="manualBarcode" placeholder="Kamera çalışmıyorsa barkodu elle yazın">
+      <button class="btn btn-outline btn-sm" onclick="manualAdd()">Ekle</button>
+    </div>
+
+    <div style="margin-top:16px;">
+      <div id="scannedList"><div class="empty">Henüz ürün okutulmadı.</div></div>
+      <div class="summary">
+        <span>Toplam: <b id="totalQty">0</b> adet</span>
+        <b id="totalPrice"></b>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-green" id="finishBtn" onclick="finishScanning()" disabled>✅ Taramayı Bitir</button>
+      <button class="btn btn-outline btn-sm" onclick="clearScanned()">🗑 Listeyi Temizle</button>
+    </div>
+  </div>
+
+  <!-- ADIM 3: FİŞ OLUŞTUR -->
+  <div class="step" id="step3">
+    <div class="step-title"><span class="step-num">3</span>Fiş Oluştur</div>
+    <div class="step-sub">Fişin kime ait olduğunu girip PDF olarak indirin.</div>
+
+    <label>Alıcı Adı</label>
+    <input type="text" id="buyerName" placeholder="Ad Soyad / Firma">
+
+    <div class="btn-row">
+      <button class="btn btn-blue" onclick="generatePDF()">🧾 Fiş Oluştur (PDF İndir)</button>
+      <button class="btn btn-outline" onclick="backToScanning()">← Taramaya Dön</button>
+      <button class="btn btn-outline btn-sm" onclick="newReceipt()">🔄 Yeni Fiş Başlat</button>
+    </div>
+  </div>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let catalog = {};        // { barcode: { name, price } }
+let scannedItems = {};   // { barcode: { name, price, qty } }
+let lastScanTime = {};
+let html5QrCode = null;
+
+const LS_KEY = 'barkod_test_katalog';
+
+// ══════════════════════════════════════════
+// KATALOG YÜKLEME
+// ══════════════════════════════════════════
+document.getElementById('catalogFile').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function (ev) {
+    try {
+      let cat;
+      if (file.name.toLowerCase().endsWith('.json')) {
+        cat = parseJSONCatalog(ev.target.result);
+      } else {
+        cat = parseCSVCatalog(ev.target.result);
+      }
+      const count = Object.keys(cat).length;
+      if (count === 0) {
+        showToast('Dosyada geçerli barkod bulunamadı', 'err');
+        return;
+      }
+      catalog = cat;
+      localStorage.setItem(LS_KEY, JSON.stringify(catalog));
+      renderCatalogPreview();
+      showToast(count + ' barkod yüklendi ✓');
+      document.getElementById('step2').classList.add('show');
+    } catch (err) {
+      showToast('Dosya okunamadı: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+});
+
+function splitCSVLine(line) {
+  const result = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ',' && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  result.push(cur);
+  return result;
+}
+
+function parseCSVCatalog(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+  const rows = lines.slice(1); // ilk satır başlık, atla
+  const cat = {};
+  rows.forEach(line => {
+    const parts = splitCSVLine(line);
+    const barcode = (parts[0] || '').trim();
+    const name = (parts[1] || '').trim();
+    const priceRaw = (parts[2] || '').trim();
+    if (!barcode) return;
+    const price = priceRaw ? parseFloat(priceRaw.replace(',', '.')) : null;
+    cat[barcode] = { name: name || barcode, price: (price != null && !isNaN(price)) ? price : null };
+  });
+  return cat;
+}
+
+function parseJSONCatalog(text) {
+  const data = JSON.parse(text);
+  const cat = {};
+  if (Array.isArray(data)) {
+    data.forEach(item => {
+      if (!item || !item.barkod && !item.barcode) return;
+      const code = String(item.barkod || item.barcode).trim();
+      const name = item.urun_adi || item.name || code;
+      const priceVal = item.fiyat != null ? item.fiyat : item.price;
+      cat[code] = { name, price: (priceVal != null && priceVal !== '') ? Number(priceVal) : null };
+    });
+  } else if (typeof data === 'object' && data !== null) {
+    Object.keys(data).forEach(k => {
+      const v = data[k] || {};
+      cat[k.trim()] = { name: v.name || v.urun_adi || k, price: (v.price != null ? v.price : v.fiyat) ?? null };
+    });
+  }
+  return cat;
+}
+
+function renderCatalogPreview() {
+  const el = document.getElementById('catalogPreview');
+  const entries = Object.entries(catalog);
+  el.innerHTML = `<div class="badge">${entries.length} barkod yüklü</div>
+    <div class="hint" style="max-height:160px;overflow-y:auto;">
+      ${entries.slice(0, 50).map(([code, p]) =>
+        `${code} — ${p.name}${p.price != null ? ' (₺' + p.price.toFixed(2) + ')' : ''}`
+      ).join('<br>')}
+      ${entries.length > 50 ? '<br>… ve ' + (entries.length - 50) + ' tane daha' : ''}
+    </div>`;
+}
+
+function downloadSampleCSV() {
+  const sample = 'barkod,urun_adi,fiyat\n8690123456789,Süt 1L,45.90\n8690987654321,Ekmek,12.50\n8690555555555,Yumurta 15li,89.00\n';
+  const blob = new Blob([sample], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'ornek-barkod-listesi.csv';
+  a.click();
+}
+
+// Kayıtlı katalog varsa geri yükle
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem(LS_KEY);
+  if (saved) {
+    try {
+      const cat = JSON.parse(saved);
+      if (Object.keys(cat).length) {
+        catalog = cat;
+        renderCatalogPreview();
+        document.getElementById('step2').classList.add('show');
+      }
+    } catch (e) {}
+  }
+});
+
+// ══════════════════════════════════════════
+// KAMERA TARAMA
+// ══════════════════════════════════════════
+async function startScanner() {
+  if (Object.keys(catalog).length === 0) {
+    showToast('Önce barkod kataloğu yükleyin', 'err');
+    return;
+  }
+  html5QrCode = new Html5Qrcode('reader');
+  const config = {
+    fps: 10,
+    qrbox: { width: 250, height: 150 },
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.UPC_A, Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.QR_CODE
+    ]
+  };
+  try {
+    await html5QrCode.start({ facingMode: 'environment' }, config, onScanSuccess, () => {});
+    document.getElementById('startBtn').style.display = 'none';
+    document.getElementById('stopBtn').style.display = 'inline-block';
+  } catch (err) {
+    showToast('Kamera başlatılamadı (HTTPS gerekir). Manuel giriş kullanabilirsiniz.', 'err');
+  }
+}
+
+async function stopScanner() {
+  if (html5QrCode) {
+    try { await html5QrCode.stop(); html5QrCode.clear(); } catch (e) {}
+  }
+  document.getElementById('startBtn').style.display = 'inline-block';
+  document.getElementById('stopBtn').style.display = 'none';
+}
+
+function onScanSuccess(decodedText) {
+  handleScan(decodedText.trim());
+}
+
+function manualAdd() {
+  const inp = document.getElementById('manualBarcode');
+  const val = inp.value.trim();
+  if (!val) return;
+  handleScan(val);
+  inp.value = '';
+  inp.focus();
+}
+document.getElementById('manualBarcode').addEventListener('keydown', e => {
+  if (e.key === 'Enter') manualAdd();
+});
+
+function handleScan(barcode) {
+  const now = Date.now();
+  if (lastScanTime[barcode] && now - lastScanTime[barcode] < 1500) return;
+  lastScanTime[barcode] = now;
+
+  const entry = catalog[barcode];
+  if (!entry) {
+    showToast('Bilinmeyen barkod: ' + barcode, 'warn');
+    if (navigator.vibrate) navigator.vibrate([50, 50, 50]);
+    return;
+  }
+  if (scannedItems[barcode]) scannedItems[barcode].qty++;
+  else scannedItems[barcode] = { name: entry.name, price: entry.price, qty: 1 };
+
+  if (navigator.vibrate) navigator.vibrate(80);
+  renderScanned();
+  showToast(entry.name + ' eklendi ✓');
+}
+
+function changeQty(code, delta) {
+  const item = scannedItems[code];
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) delete scannedItems[code];
+  renderScanned();
+}
+
+function removeItem(code) {
+  delete scannedItems[code];
+  renderScanned();
+}
+
+function clearScanned() {
+  scannedItems = {};
+  renderScanned();
+}
+
+function renderScanned() {
+  const el = document.getElementById('scannedList');
+  const entries = Object.entries(scannedItems);
+  if (entries.length === 0) {
+    el.innerHTML = '<div class="empty">Henüz ürün okutulmadı.</div>';
+  } else {
+    el.innerHTML = entries.map(([code, item]) => `
+      <div class="item-row">
+        <div>
+          <div class="item-name">${item.name}</div>
+          <div class="item-code">${code}${item.price != null ? ' · ₺' + item.price.toFixed(2) : ''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="qty-ctrl">
+            <button class="qty-btn" onclick="changeQty('${code}',-1)">−</button>
+            <span class="qty-val">${item.qty}</span>
+            <button class="qty-btn" onclick="changeQty('${code}',1)">+</button>
+          </div>
+          <button class="del-btn" onclick="removeItem('${code}')">✕</button>
+        </div>
+      </div>`).join('');
+  }
+
+  const totalQty = entries.reduce((s, [, i]) => s + i.qty, 0);
+  const hasPrices = entries.some(([, i]) => i.price != null);
+  const totalPrice = entries.reduce((s, [, i]) => s + (i.price != null ? i.price * i.qty : 0), 0);
+
+  document.getElementById('totalQty').textContent = totalQty;
+  document.getElementById('totalPrice').textContent = hasPrices ? '₺' + totalPrice.toFixed(2) : '';
+  document.getElementById('finishBtn').disabled = entries.length === 0;
+}
+
+// ══════════════════════════════════════════
+// FİŞ ADIMI
+// ══════════════════════════════════════════
+function finishScanning() {
+  stopScanner();
+  document.getElementById('step3').classList.add('show');
+  document.getElementById('step3').scrollIntoView({ behavior: 'smooth' });
+}
+
+function backToScanning() {
+  document.getElementById('step3').classList.remove('show');
+}
+
+function newReceipt() {
+  scannedItems = {};
+  document.getElementById('buyerName').value = '';
+  renderScanned();
+  document.getElementById('step3').classList.remove('show');
+  document.getElementById('step2').scrollIntoView({ behavior: 'smooth' });
+}
+
+function generatePDF() {
+  const buyer = document.getElementById('buyerName').value.trim();
+  if (!buyer) { showToast('Alıcı adını girin', 'err'); return; }
+  const entries = Object.entries(scannedItems);
+  if (entries.length === 0) { showToast('Taranan ürün yok', 'err'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a5' });
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('tr-TR') + ' ' + now.toLocaleTimeString('tr-TR');
+  const receiptNo = 'FIS-' + now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') +
+    String(now.getDate()).padStart(2, '0') + '-' + String(now.getHours()).padStart(2, '0') +
+    String(now.getMinutes()).padStart(2, '0') + String(now.getSeconds()).padStart(2, '0');
+
+  let y = 15;
+  doc.setFontSize(16); doc.setFont(undefined, 'bold');
+  doc.text('FİŞ (TEST)', 74, y, { align: 'center' }); y += 8;
+  doc.setFontSize(9); doc.setFont(undefined, 'normal');
+  doc.text('Fiş No: ' + receiptNo, 10, y); y += 5;
+  doc.text('Tarih: ' + dateStr, 10, y); y += 5;
+  doc.text('Alıcı: ' + buyer, 10, y); y += 8;
+
+  doc.setLineWidth(0.2); doc.line(10, y, 138, y); y += 6;
+
+  doc.setFont(undefined, 'bold');
+  doc.text('Ürün', 10, y); doc.text('Adet', 95, y); doc.text('Tutar', 125, y, { align: 'right' });
+  doc.setFont(undefined, 'normal'); y += 5;
+  doc.line(10, y - 3, 138, y - 3);
+
+  const hasPrices = entries.some(([, i]) => i.price != null);
+  let totalPrice = 0, totalQty = 0;
+
+  entries.forEach(([code, item]) => {
+    if (y > 190) { doc.addPage(); y = 15; }
+    doc.text(item.name.substring(0, 40), 10, y);
+    doc.text(String(item.qty), 95, y);
+    if (item.price != null) {
+      doc.text('₺' + (item.price * item.qty).toFixed(2), 138, y, { align: 'right' });
+      totalPrice += item.price * item.qty;
+    }
+    totalQty += item.qty;
+    y += 5;
+    doc.setFontSize(7); doc.setTextColor(120);
+    doc.text(code, 10, y);
+    doc.setFontSize(9); doc.setTextColor(0);
+    y += 5;
+  });
+
+  y += 2;
+  doc.line(10, y, 138, y); y += 7;
+  doc.setFont(undefined, 'bold'); doc.setFontSize(11);
+  doc.text('Toplam Adet: ' + totalQty, 10, y);
+  if (hasPrices) doc.text('Toplam: ₺' + totalPrice.toFixed(2), 138, y, { align: 'right' });
+  y += 10;
+
+  doc.setFont(undefined, 'normal'); doc.setFontSize(8); doc.setTextColor(140);
+  doc.text('Bu fiş test amaçlı oluşturulmuştur, stok/satış kaydı içermez.', 10, y);
+
+  doc.save(receiptNo + '.pdf');
+  showToast('Fiş indirildi ✓');
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function showToast(msg, type) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = 'toast'; }, 2500);
+}
+</script>
+</body>
+</html>
